@@ -2,8 +2,7 @@
 
 #include <fstream>
 
-int main()
-{
+void testNet() {
     int iterations = 2;
     Net *net;
     constexpr int nLayers = 2;
@@ -38,6 +37,11 @@ int main()
     net->snapWeights();
 
     delete net;
+}
+
+int main()
+{
+    testNet();
     return 0;
 
 }

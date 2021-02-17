@@ -1,6 +1,4 @@
 #include "cldl/Net.h"
-#include "cldl/Layer.h"
-#include "cldl/Neuron.h"
 
 #include <stdio.h>
 #include <assert.h>
@@ -143,7 +141,7 @@ void Net::propErrorBackward(){
             double normSum = sum ; // / weightSumer;
             assert(std::isfinite(sum));
             assert(std::isfinite(weightSumer));
-            assert(std::isfinite(counter));
+            assert(std::isfinite(counter*1.0));
             assert(std::isfinite(normSum));
             layers[i-1]->propErrorBackward(k, normSum);
           }
@@ -190,7 +188,7 @@ void Net::propMidErrorBackward(){
             double normSum = sum ; // / weightSumer;
             assert(std::isfinite(sum));
             assert(std::isfinite(weightSumer));
-            assert(std::isfinite(counter));
+            assert(std::isfinite(counter*1.0));
             assert(std::isfinite(normSum));
             layers[i-1]->propMidErrorBackward(k, normSum);
         }
@@ -265,7 +263,7 @@ void Net::echoErrorBackward(){
             double normSum = sum ; // / weightSumer;
             assert(std::isfinite(sum));
             assert(std::isfinite(weightSumer));
-            assert(std::isfinite(counter));
+            assert(std::isfinite(counter*1.0));
             assert(std::isfinite(normSum));
             layers[i-1]->echoErrorBackward(k, normSum);
         }
@@ -323,7 +321,7 @@ void Net::propGlobalErrorBackwardLocally(){
             double normSum = sum; //  / weightSumer;
             assert(std::isfinite(sum));
             assert(std::isfinite(weightSumer));
-            assert(std::isfinite(counter));
+            assert(std::isfinite(counter*1.0));
             assert(std::isfinite(normSum));
             layers[i-1]->propGlobalErrorBackwardLocally(k, normSum);
         }

@@ -113,6 +113,7 @@ void Neuron::setInput(int _index,  double _value) {
     //cout << "Neuron the input is: " << _value << endl;
 }
 
+
 void Neuron::propInputs(int _index,  double _value){
     /*works like setInput function expect it only applies
      * to the neurons in the hidden and output layers
