@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <stdio.h>
 #include <assert.h>
 #include <iostream>
@@ -9,14 +8,15 @@
 #include <cstdio>
 #include <cassert>
 #include <fstream>
-#include <iostream>
 #include <math.h>
 #include <fstream>
-#include <iostream>
 #include <string>
 #include <numeric>
 #include <vector>
-
+#include <cuda_runtime.h>
+//#include <cuda.h>
+//
+#define CUDA_HOSTDEV __host__ __device__
 
 using namespace std;
 

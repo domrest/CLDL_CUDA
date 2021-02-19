@@ -12,6 +12,7 @@
 #include <string>
 #include <numeric>
 #include <vector>
+#define CUDA_HOSTDEV __host__ __device__
 
 using namespace std;
 
@@ -107,7 +108,7 @@ void Neuron::setInput(int _index,  double _value) {
     /* the seInput function sets one input value at the given index,
      * it has to be implemented in a loop inside the layer class to set
      * all the inputs associated with all the neurons in that layer*/
-    assert((_index>=0)&&(_index<nInputs));
+//    assert((_index>=0)&&(_index<nInputs));
     /*checking _index is a valid int, non-negative and within boundary*/
     inputs[_index] = _value;
     //cout << "Neuron the input is: " << _value << endl;
@@ -330,7 +331,7 @@ double Neuron::doActivationPrime(double _input){
 //global settings
 //*************************************************************************************
 
-void Neuron::setGlobalError(double _globalError){
+__global__ void Neuron::setGlobalError(double _globalError){
   globalError = _globalError;
 }
 
