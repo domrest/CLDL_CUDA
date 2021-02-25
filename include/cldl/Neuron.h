@@ -99,16 +99,24 @@ private:
     double *initialWeights;
     double *learningRate;
 
+    int *iHaveReported;
+
     //forward propagation of inputs:
     double *inputs;
+    double *bias;
+    double *sum;
+    double *output;
 
     //forward propagation of error:
     double *inputErrors;
+    double *forwardError;
 
     //back propagation of error
+    double *backwardError;
 
     //mid propagation of error
     double *inputMidErrors;
+    double *midError;
 
     //learning:
     double *backwardsCoeff;

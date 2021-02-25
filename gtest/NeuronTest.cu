@@ -54,7 +54,7 @@ TEST(NeuronTest, testSumAndMaxMin){
 
     cudaMemcpy(d_list, list, sizeof(double)*4, cudaMemcpyHostToDevice);
 
-    gpu_getSumAndMaxMin<<<1,1>>>(d_sum, d_max, d_min, d_list, 4);
+    gpu_getSumAndMaxMin<<<1,4>>>(d_sum, d_max, d_min, d_list);
     cudaMemcpy(sum, d_sum, sizeof(double), cudaMemcpyDeviceToHost);
     cudaMemcpy(max, d_max, sizeof(double), cudaMemcpyDeviceToHost);
     cudaMemcpy(min, d_min, sizeof(double), cudaMemcpyDeviceToHost);

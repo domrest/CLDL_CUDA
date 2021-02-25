@@ -21,13 +21,32 @@ using namespace std;
 
 __host__ Neuron::Neuron(int _nInputs)
 {
-
-    cudaMalloc((void**)&nInputs, sizeof(int));
-    cudaMemcpy(nInputs, &_nInputs, sizeof(int), cudaMemcpyHostToDevice);
-
-    gpu_allocateDouble(&learningRate, 0.0);
+    // initialisation
+    gpu_allocateInt(&nInputs, _nInputs);
     gpu_allocateInt(&myLayerIndex, 0);
     gpu_allocateInt(&myNeuronIndex, 0);
+    cudaMalloc((void**)&initialWeights, sizeof(double)*_nInputs);
+    gpu_allocateDouble(&learningRate, 0.0);
+
+    gpu_allocateInt(&iHaveReported, 0);
+
+    // forward propagation of inputs
+    cudaMalloc((void**)&inputs, sizeof(double)*_nInputs);
+    gpu_allocateDouble(&bias, 0.0);
+    gpu_allocateDouble(&sum, 0.0);
+    gpu_allocateDouble(&output, 0.0);
+
+    // forward propagation of error
+    cudaMalloc((void**)&inputErrors, sizeof(double)*_nInputs);
+    gpu_allocateDouble(&forwardError, 0.0);
+
+
+    // back propagation of error
+    gpu_allocateDouble(&backwardError, 0.0);
+
+    // mid propagation of error
+    cudaMalloc((void**)&inputMidErrors, sizeof(double)*_nInputs);
+    gpu_allocateDouble(&midError, 0.0);
 
 
     //
@@ -51,10 +70,6 @@ __host__ Neuron::Neuron(int _nInputs)
     // learning variables end
     //
 
-    cudaMalloc((void**)&initialWeights, sizeof(double)*_nInputs);
-    cudaMalloc((void**)&inputs, sizeof(double)*_nInputs);
-    cudaMalloc((void**)&inputErrors, sizeof(double)*_nInputs);
-    cudaMalloc((void**)&inputMidErrors, sizeof(double)*_nInputs);
     cudaMalloc((void**)&echoErrors, sizeof(double)*_nInputs);
 
     //cout << "neuron" << endl;
@@ -62,10 +77,32 @@ __host__ Neuron::Neuron(int _nInputs)
 }
 
 __host__ Neuron::~Neuron(){
+    //initialisation
     cudaFree(nInputs);
     cudaFree(learningRate);
     cudaFree(myLayerIndex);
+    cudaFree(initialWeights);
     cudaFree(myNeuronIndex);
+
+    cudaFree(iHaveReported);
+
+    // forward propagation of inputs
+    cudaFree(inputs);
+    cudaFree(bias);
+    cudaFree(sum);
+    cudaFree(output);
+
+    // forward propagation of error
+    cudaFree(inputErrors);
+    cudaFree(forwardError);
+
+    // back propagation of error
+    cudaFree(backwardError);
+
+    // mid propagation of error
+    cudaFree(inputMidErrors);
+    cudaFree(midError);
+
 
     //learning
     cudaFree(backwardsCoeff);
@@ -82,10 +119,6 @@ __host__ Neuron::~Neuron(){
 
 
 
-    cudaFree(initialWeights);
-    cudaFree(inputs);
-    cudaFree(inputErrors);
-    cudaFree(inputMidErrors);
     cudaFree(echoErrors);
 }
 
@@ -94,8 +127,7 @@ __host__ Neuron::~Neuron(){
 //initialisation:
 //*************************************************************************************
 
-//TODO initNeuron
-
+//TODO test init neuron
 __host__ void Neuron::initNeuron(int _neuronIndex, int _layerIndex, weightInitMethod _wim, biasInitMethod _bim, actMethod _am){
     cudaMemcpy(myLayerIndex, &_layerIndex, sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(myNeuronIndex, &_neuronIndex, sizeof(int), cudaMemcpyHostToDevice);
@@ -107,6 +139,7 @@ __host__ void Neuron::initNeuron(int _neuronIndex, int _layerIndex, weightInitMe
             gpu_setValuesInArray<<<1,getNInputs()>>>(1, weights);
             break;
         case W_RANDOM:
+            //TODO set the random
 //            weights[i] = (((double) rand() / (RAND_MAX))); //* 2) -1;
             break;
             //cout << " Neuron: weight is: " << weights[i] << endl;
@@ -116,32 +149,32 @@ __host__ void Neuron::initNeuron(int _neuronIndex, int _layerIndex, weightInitMe
     }
     cudaMemcpy(initialWeights, weights, sizeof(double)*getNInputs(), cudaMemcpyDeviceToDevice);
 
-//    weightSum = 0;
-//
-//
-//    switch (_bim){
-//        case B_NONE:
-//            bias=0;
-//            break;
-//        case B_RANDOM:
-//            bias=((double)rand()/RAND_MAX);
-//            break;
-//    }
-//    switch(_am){
-//        case Act_Sigmoid:
-//            actMet = 0;
-//            break;
-//        case Act_Tanh:
-//            actMet = 1;
-//            break;
-//        case Act_NONE:
-//            actMet = 2;
-//            break;
-//    }
+    gpu_setDouble<<<1,1>>>(weightSum, 0);
+    gpu_getSumAndMaxMin<<<1,1>>>(weightSum, maxWeight, minWeight, weights, getNInputs());
+
+    switch (_bim){
+        case B_NONE:
+            gpu_setDouble<<<1,1>>>(bias, 0.0);
+            break;
+        case B_RANDOM:
+            gpu_setDouble<<<1,1>>>(bias, ((double)rand()/RAND_MAX));
+            break;
+    }
+    switch(_am){
+        case Act_Sigmoid:
+            gpu_setInt<<<1,1>>>(actMet, 0);
+            break;
+        case Act_Tanh:
+            gpu_setInt<<<1,1>>>(actMet, 1);
+            break;
+        case Act_NONE:
+            gpu_setInt<<<1,1>>>(actMet, 2);
+            break;
+    }
 }
 
 __host__ void Neuron::setLearningRate(double _learningRate){
-    cudaMemcpy(learningRate, &_learningRate, sizeof(double), cudaMemcpyHostToDevice);
+    gpu_setDouble<<<1,1>>>(learningRate, _learningRate);
 }
 
 __host__ double Neuron::getLearningRate() {
