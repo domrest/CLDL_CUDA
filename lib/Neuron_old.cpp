@@ -1,4 +1,4 @@
-#include "cldl/Neuron_old.h"
+#include "cldl/Neuron.h"
 
 #include <assert.h>
 #include <iostream>
@@ -12,7 +12,6 @@
 #include <string>
 #include <numeric>
 #include <vector>
-#define CUDA_HOSTDEV __host__ __device__
 
 using namespace std;
 
@@ -23,24 +22,24 @@ using namespace std;
 Neuron::Neuron(int _nInputs)
 {
     nInputs=_nInputs;
-    cudaMalloc((void**)&weights, sizeof(double)*nInputs);
-    cudaMalloc((void**)&initialWeights, sizeof(double)*nInputs);
-    cudaMalloc((void**)&inputs, sizeof(double)*nInputs);
-    cudaMalloc((void**)&inputErrors, sizeof(double)*nInputs);
-    cudaMalloc((void**)&inputMidErrors, sizeof(double)*nInputs);
-    cudaMalloc((void**)&echoErrors, sizeof(double)*nInputs);
-
+    weights = new double[nInputs];
+    initialWeights = new double[nInputs];
+    inputs = new double[nInputs];
+    inputErrors = new double[nInputs];
+    inputMidErrors = new double[nInputs];
+    echoErrors = new double[nInputs];
     //cout << "neuron" << endl;
 
 }
 
 Neuron::~Neuron(){
-    cudaFree(weights);
-    cudaFree(initialWeights);
-    cudaFree(inputs);
-    cudaFree(inputErrors);
-    cudaFree(inputMidErrors);
-    cudaFree(echoErrors);
+    delete [] weights;
+    delete [] initialWeights;
+    delete [] inputs;
+    delete [] inputErrors;
+    delete [] inputMidErrors;
+    delete [] echoErrors;
+
 }
 
 //*************************************************************************************
@@ -108,7 +107,7 @@ void Neuron::setInput(int _index,  double _value) {
     /* the seInput function sets one input value at the given index,
      * it has to be implemented in a loop inside the layer class to set
      * all the inputs associated with all the neurons in that layer*/
-//    assert((_index>=0)&&(_index<nInputs));
+    assert((_index>=0)&&(_index<nInputs));
     /*checking _index is a valid int, non-negative and within boundary*/
     inputs[_index] = _value;
     //cout << "Neuron the input is: " << _value << endl;

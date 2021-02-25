@@ -5,8 +5,8 @@ set(CMAKE_CUDA_STANDARD 14)
 
 project(CLDL LANGUAGES CUDA CXX)
 
-find_package(CUDA REQUIRED)
-include_directories("${CUDA_INCLUDE_DIRS}")
+SET(CUDA_SEPARABLE_COMPILATION ON)
+find_package(CUDA QUIET REQUIRED)
 
 # 'Google_test' is the subproject name
 project(gtest)

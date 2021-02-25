@@ -37,12 +37,23 @@ public:
      */
     ~Neuron();
 
+
+    __host__ void setLearningRate(double _learningRate);
+    __host__ double getLearningRate();
     __host__ int getNInputs();
+
+    __host__ void setForwardError(double _value);
+    __host__ double getInputError(int index);
+    __host__ void propErrorForward(int _index, double _value);
+
+
+
 
 private:
     // initialisation:
     int *nInputs;
     double *initialWeights;
+    double *learningRate;
 
     //forward propagation of inputs:
     double *inputs;
@@ -61,4 +72,8 @@ private:
     //global setting
     double *echoErrors;
 
+
 };
+__global__ static void gpu_setValuesInArray(double _value, double* inputErrors);
+__global__ static void gpu_setValueInArray(double _value, int index, double* inputErrors);
+
