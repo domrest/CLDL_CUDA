@@ -131,9 +131,14 @@ private:
     double *weightsDifference;
     int *actMet;
 
-
-
     //global setting
+    double *globalError;
+    double *localError;
+    double *echoCoeff;
+    double *localCoeff;
+
+    double *overallError;
+    double *echoError;
     double *echoErrors;
 
 

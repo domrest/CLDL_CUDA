@@ -66,10 +66,14 @@ __host__ Neuron::Neuron(int _nInputs)
     gpu_allocateDouble(&weightsDifference, 0.0);
     gpu_allocateInt(&actMet, 0);
 
-    //
-    // learning variables end
-    //
+    // global setting
+    gpu_allocateDouble(&globalError, 0.0);
+    gpu_allocateDouble(&localError, 0.0);
+    gpu_allocateDouble(&echoCoeff, 0.0);
+    gpu_allocateDouble(&localCoeff, 0.0);
 
+    gpu_allocateDouble(&overallError, 0.0);
+    gpu_allocateDouble(&echoError, 0.0);
     cudaMalloc((void**)&echoErrors, sizeof(double)*_nInputs);
 
     //cout << "neuron" << endl;
@@ -117,8 +121,14 @@ __host__ Neuron::~Neuron(){
     cudaFree(weightsDifference);
     cudaFree(actMet);
 
+    // global setting
+    cudaFree(globalError);
+    cudaFree(localError);
+    cudaFree(echoCoeff);
+    cudaFree(localCoeff);
 
-
+    cudaFree(overallError);
+    cudaFree(echoError);
     cudaFree(echoErrors);
 }
 
