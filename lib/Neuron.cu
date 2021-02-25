@@ -25,10 +25,32 @@ __host__ Neuron::Neuron(int _nInputs)
     cudaMalloc((void**)&nInputs, sizeof(int));
     cudaMemcpy(nInputs, &_nInputs, sizeof(int), cudaMemcpyHostToDevice);
 
-    cudaMalloc((void**)&learningRate, sizeof(double));
-    cudaMemcpyFromSymbol(learningRate, 0.0, sizeof(double));
+    gpu_allocateDouble(&learningRate, 0.0);
+    gpu_allocateInt(&myLayerIndex, 0);
+    gpu_allocateInt(&myNeuronIndex, 0);
+
+
+    //
+    // learning variables
+    //
+    gpu_allocateDouble(&backwardsCoeff, 0.0);
+    gpu_allocateDouble(&midCoeff, 0.0);
+    gpu_allocateDouble(&forwardCoeff, 0.0);
+    gpu_allocateDouble(&globalCoeff, 0.0);
 
     cudaMalloc((void**)&weights, sizeof(double)*_nInputs);
+
+    gpu_allocateDouble(&weightSum, 0.0);
+    gpu_allocateDouble(&maxWeight, 1.0);
+    gpu_allocateDouble(&minWeight, 1.0);
+    gpu_allocateDouble(&weightChange, 0.0);
+    gpu_allocateDouble(&weightsDifference, 0.0);
+    gpu_allocateInt(&actMet, 0);
+
+    //
+    // learning variables end
+    //
+
     cudaMalloc((void**)&initialWeights, sizeof(double)*_nInputs);
     cudaMalloc((void**)&inputs, sizeof(double)*_nInputs);
     cudaMalloc((void**)&inputErrors, sizeof(double)*_nInputs);
@@ -42,8 +64,24 @@ __host__ Neuron::Neuron(int _nInputs)
 __host__ Neuron::~Neuron(){
     cudaFree(nInputs);
     cudaFree(learningRate);
+    cudaFree(myLayerIndex);
+    cudaFree(myNeuronIndex);
 
+    //learning
+    cudaFree(backwardsCoeff);
+    cudaFree(midCoeff);
+    cudaFree(forwardCoeff);
+    cudaFree(globalCoeff);
     cudaFree(weights);
+    cudaFree(weightSum);
+    cudaFree(maxWeight);
+    cudaFree(minWeight);
+    cudaFree(weightChange);
+    cudaFree(weightsDifference);
+    cudaFree(actMet);
+
+
+
     cudaFree(initialWeights);
     cudaFree(inputs);
     cudaFree(inputErrors);
@@ -57,6 +95,50 @@ __host__ Neuron::~Neuron(){
 //*************************************************************************************
 
 //TODO initNeuron
+
+__host__ void Neuron::initNeuron(int _neuronIndex, int _layerIndex, weightInitMethod _wim, biasInitMethod _bim, actMethod _am){
+    cudaMemcpy(myLayerIndex, &_layerIndex, sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(myNeuronIndex, &_neuronIndex, sizeof(int), cudaMemcpyHostToDevice);
+    switch(_wim) {
+        case W_ZEROS:
+            gpu_setValuesInArray<<<1,getNInputs()>>>(0, weights);
+            break;
+        case W_ONES:
+            gpu_setValuesInArray<<<1,getNInputs()>>>(1, weights);
+            break;
+        case W_RANDOM:
+//            weights[i] = (((double) rand() / (RAND_MAX))); //* 2) -1;
+            break;
+            //cout << " Neuron: weight is: " << weights[i] << endl;
+            /* rand function generates a random function between
+             * 0 and RAND_MAX, after the devision the weights are
+             * set to a value between 0 and 1 */
+    }
+    cudaMemcpy(initialWeights, weights, sizeof(double)*getNInputs(), cudaMemcpyDeviceToDevice);
+
+//    weightSum = 0;
+//
+//
+//    switch (_bim){
+//        case B_NONE:
+//            bias=0;
+//            break;
+//        case B_RANDOM:
+//            bias=((double)rand()/RAND_MAX);
+//            break;
+//    }
+//    switch(_am){
+//        case Act_Sigmoid:
+//            actMet = 0;
+//            break;
+//        case Act_Tanh:
+//            actMet = 1;
+//            break;
+//        case Act_NONE:
+//            actMet = 2;
+//            break;
+//    }
+}
 
 __host__ void Neuron::setLearningRate(double _learningRate){
     cudaMemcpy(learningRate, &_learningRate, sizeof(double), cudaMemcpyHostToDevice);
@@ -214,13 +296,36 @@ __host__ int Neuron::getNInputs(){
 
 
 //*************************************************************************************
-//global kernel:
+//global CUDA kernels:
 //*************************************************************************************
 
-__global__ static void gpu_setValuesInArray(double _value, double* list){
+__global__ void gpu_setValuesInArray(double _value, double* list){
     list[threadIdx.x] = _value;
 }
 
-__global__ static void gpu_setValueInArray(double _value, int index, double* list){
+__global__ void gpu_setValueInArray(double _value, int index, double* list){
     list[index] = _value;
+}
+
+__global__ void gpu_getSumAndMaxMin(double* sum, double* max_list, double* list_min, double* list, int length){
+    for (int i=0; i<length; i++){
+        *sum = *sum + fabs(list[i]);
+        *max_list = max(*max_list, list[i]);
+        *list_min = min(*list_min, list[i]);
+    }
+}
+
+__host__ void gpu_allocateInt(int** pointer, int value){
+    cudaMalloc((void**)pointer, sizeof(int));
+    gpu_setInt<<<1,1>>>(*pointer, value);
+}
+__global__ void gpu_setInt(int* pointer, int value) {
+    *pointer = value;
+}
+__host__ void gpu_allocateDouble(double** pointer, double value){
+    cudaMalloc((void**)pointer, sizeof(double));
+    gpu_setDouble<<<1,1>>>(*pointer, value);
+}
+__global__ void gpu_setDouble(double* pointer, double value){
+    *pointer = value;
 }
