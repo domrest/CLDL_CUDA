@@ -6,8 +6,8 @@ set(CMAKE_CUDA_STANDARD 14)
 project(CLDL LANGUAGES CUDA CXX)
 
 add_library(CLDL
-        lib/Layer.cpp
-        lib/Net.cpp
+#        lib/Layer.cpp
+#        lib/Net.cpp
         lib/Neuron.cu)
 
 target_include_directories(CLDL PUBLIC include)
