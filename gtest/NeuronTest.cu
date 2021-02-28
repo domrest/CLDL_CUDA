@@ -20,7 +20,21 @@ TEST(NeuronTest, testSetLearningRate){
     ASSERT_EQ(n->getLearningRate(), 2.0);
 }
 
-TEST(NeuronTest, testSetInputErrors){
+TEST(Neuron, testSetInputs){
+    Neuron *n;
+    n = new Neuron(3);
+    n->setInput(0,2.0);
+    n->setInput(1,4.0);
+    n->setInput(2,6.0);
+
+    n->propInputs(1,3.0);
+
+    ASSERT_EQ(n->getInput(0), 2.0);
+    ASSERT_EQ(n->getInput(1), 3.0);
+    ASSERT_EQ(n->getInput(2), 6.0);
+}
+
+TEST(NeuronTest, testSetInputErrors) {
     Neuron *n;
     n = new Neuron(4);
     n->setForwardError(2.0);
@@ -30,7 +44,9 @@ TEST(NeuronTest, testSetInputErrors){
 
 }
 
+TEST(NeuronTest, testGetForwardError){
 
+}
 TEST(NeuronTest, testSumAndMaxMin){
     double *sum, *d_sum, *max, *d_max, *min, *d_min, *list, *d_list;
 
@@ -63,6 +79,35 @@ TEST(NeuronTest, testSumAndMaxMin){
     ASSERT_EQ(*max, 2.0);
     ASSERT_EQ(*min, 0.5);
 
+}
+
+TEST(NeuronTest, testDotProduct){
+    double *d_list1, *d_list2, *list1, *list2,*d_value, *value;
+
+    gpu_allocateDouble(&d_value, 0.0);
+    cudaMalloc((void**)&d_list1, sizeof(double)*3);
+    cudaMalloc((void**)&d_list2, sizeof(double)*3);
+
+    list1 = new double[3];
+    list1[0] = 1.0;
+    list1[1] = 1.0;
+    list1[2] = 1.0;
+
+    list2 = new double[3];
+    list2[0] = 1.0;
+    list2[1] = 2.0;
+    list2[2] = 3.0;
+
+    value = (double*)malloc(sizeof(double));
+
+    cudaMemcpy(d_list1, list1, sizeof(double)*3,cudaMemcpyHostToDevice);
+    cudaMemcpy(d_list2, list2, sizeof(double)*3,cudaMemcpyHostToDevice);
+
+    gpu_dotProduct<<<1,1>>>(d_list1, d_list2, d_value, 3);
+
+    cudaMemcpy(value, d_value, sizeof(double), cudaMemcpyDeviceToHost);
+
+    ASSERT_EQ(*value, 6.0);
 }
 
 

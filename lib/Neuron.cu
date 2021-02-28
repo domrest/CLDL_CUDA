@@ -197,10 +197,24 @@ __host__ double Neuron::getLearningRate() {
 //*************************************************************************************
 //forward propagation of inputs:
 //*************************************************************************************
+__host__ void Neuron::setInput(int _index, double _value) {
+    assert((_index>=0)&&(_index<getNInputs()));
+    gpu_setValueInArray<<<1,1>>>(_value, _index, inputs);
+}
 
-//TODO setInput
+__host__ double Neuron::getInput(int index) {
+    double _input = 0.0;
+    assert(index < getNInputs());
 
-//TODO propInputs
+    double* input = inputs + index;
+    cudaMemcpy(&_input, input, sizeof(double), cudaMemcpyDeviceToHost);
+    return _input;
+}
+
+__host__ void Neuron::propInputs(int _index,  double _value){
+    assert((_index>=0)&&(_index < getNInputs()));
+    gpu_setValueInArray<<<1,1>>>(_value,_index, inputs);
+}
 
 //TODO calcOutput
 
@@ -252,6 +266,7 @@ __host__ void Neuron::propErrorForward(int _index, double _value){
 //TODO setMidError
 
 //TODO calcMidError
+
 
 //TODO getMidError
 
@@ -371,4 +386,16 @@ __host__ void gpu_allocateDouble(double** pointer, double value){
 }
 __global__ void gpu_setDouble(double* pointer, double value){
     *pointer = value;
+}
+
+__global__ void gpu_dotProduct(double* list1, double* list2, double* _value, int length){
+    int index = threadIdx.x;
+    int stride = blockDim.x;
+
+    double value = 0.0;
+    for (int i = index; i<length; i+= stride){
+        value += list1[i]*list2[i];
+    }
+
+    *_value = value;
 }

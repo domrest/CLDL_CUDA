@@ -80,16 +80,19 @@ public:
      */
     __host__ void initNeuron(int _neuronIndex, int _layerIndex, weightInitMethod _wim, biasInitMethod _bim, actMethod _am);
 
+    //Forward Propagation of inputs:
+    __host__ void setInput(int _index,  double _value);
+    __host__ void propInputs(int _index,  double _value);
+    __host__ double getInput(int index);
+
     __host__ void setLearningRate(double _learningRate);
     __host__ double getLearningRate();
     __host__ int getNInputs();
 
+    //Forward Propagation of errors:
     __host__ void setForwardError(double _value);
     __host__ double getInputError(int index);
     __host__ void propErrorForward(int _index, double _value);
-
-
-
 
 private:
     // initialisation:
@@ -152,3 +155,4 @@ __global__ void gpu_setInt(int* pointer, int value);
 
 __host__ void gpu_allocateDouble(double** pointer, double value);
 __global__ void gpu_setDouble(double* pointer, double value);
+__global__ void gpu_dotProduct(double* list1, double* list2, double* _value, int length);
