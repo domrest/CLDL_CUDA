@@ -245,6 +245,7 @@ __host__ void Neuron::propErrorForward(int _index, double _value){
 
 //TODO getForwardError
 
+
 //*************************************************************************************
 //back propagation of error
 //*************************************************************************************
@@ -388,14 +389,25 @@ __global__ void gpu_setDouble(double* pointer, double value){
     *pointer = value;
 }
 
-__global__ void gpu_dotProduct(double* list1, double* list2, double* _value, int length){
-    int index = threadIdx.x;
+__global__ void gpu_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength){
+    int idx = threadIdx.x;
     int stride = blockDim.x;
 
-    double value = 0.0;
-    for (int i = index; i<length; i+= stride){
-        value += list1[i]*list2[i];
+    double target = 0.0;
+    for (int i = idx; i < arrayLength; i+=stride){
+        target += list1[i]*list2[i];
     }
 
-    *_value = value;
+    _value[idx] = target;
+    __syncthreads();
+
+    for (int size = stride/2; size>0; size/=2){
+        if (idx < size){
+            _value[idx] += _value[idx+size];
+        }
+        __syncthreads();
+    }
+    if (idx == 0){
+        *_target = _value[0];
+    }
 }

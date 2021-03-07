@@ -94,6 +94,7 @@ public:
     __host__ double getInputError(int index);
     __host__ void propErrorForward(int _index, double _value);
 
+
 private:
     // initialisation:
     int *nInputs;
@@ -155,4 +156,4 @@ __global__ void gpu_setInt(int* pointer, int value);
 
 __host__ void gpu_allocateDouble(double** pointer, double value);
 __global__ void gpu_setDouble(double* pointer, double value);
-__global__ void gpu_dotProduct(double* list1, double* list2, double* _value, int length);
+__global__ void gpu_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength);

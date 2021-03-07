@@ -44,9 +44,7 @@ TEST(NeuronTest, testSetInputErrors) {
 
 }
 
-TEST(NeuronTest, testGetForwardError){
 
-}
 TEST(NeuronTest, testSumAndMaxMin){
     double *sum, *d_sum, *max, *d_max, *min, *d_min, *list, *d_list;
 
@@ -82,32 +80,35 @@ TEST(NeuronTest, testSumAndMaxMin){
 }
 
 TEST(NeuronTest, testDotProduct){
-    double *d_list1, *d_list2, *list1, *list2,*d_value, *value;
+    double *d_list1, *d_list2, *list1, *list2,*d_value, *d_target, *target;
 
-    gpu_allocateDouble(&d_value, 0.0);
-    cudaMalloc((void**)&d_list1, sizeof(double)*3);
-    cudaMalloc((void**)&d_list2, sizeof(double)*3);
+    gpu_allocateDouble(&d_target, 0.0);
+    cudaMalloc((void**)&d_list1, sizeof(double)*4);
+    cudaMalloc((void**)&d_list2, sizeof(double)*4);
+    cudaMalloc((void**)&d_value, sizeof(double)*4);
 
-    list1 = new double[3];
+    list1 = new double[4];
     list1[0] = 1.0;
     list1[1] = 1.0;
     list1[2] = 1.0;
+    list1[3] = 1.0;
 
-    list2 = new double[3];
+    list2 = new double[4];
     list2[0] = 1.0;
     list2[1] = 2.0;
     list2[2] = 3.0;
+    list2[3] = 4.0;
 
-    value = (double*)malloc(sizeof(double));
+    target = (double*)malloc(sizeof(double));
 
-    cudaMemcpy(d_list1, list1, sizeof(double)*3,cudaMemcpyHostToDevice);
-    cudaMemcpy(d_list2, list2, sizeof(double)*3,cudaMemcpyHostToDevice);
+    cudaMemcpy(d_list1, list1, sizeof(double)*4,cudaMemcpyHostToDevice);
+    cudaMemcpy(d_list2, list2, sizeof(double)*4,cudaMemcpyHostToDevice);
 
-    gpu_dotProduct<<<1,1>>>(d_list1, d_list2, d_value, 3);
+    gpu_dotProduct<<<1,4>>>(d_list1, d_list2, d_value, d_target, 4);
 
-    cudaMemcpy(value, d_value, sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(target, d_target, sizeof(double), cudaMemcpyDeviceToHost);
 
-    ASSERT_EQ(*value, 6.0);
+    ASSERT_EQ(*target, 10.0);
 }
 
 
