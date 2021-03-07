@@ -242,8 +242,20 @@ __host__ void Neuron::propErrorForward(int _index, double _value){
 
 
 //TODO calcForwardError
+__host__ void Neuron::calcForwardError() {
+    double* _value;
+    cudaMalloc((void**)&_value, sizeof(double)*getNInputs());
+    gpu_dotProduct<<<1, getNInputs()>>>(inputErrors, weights, _value, fowardError, getNInputs());
 
+    //TODO forwardError must be multiplied with doActivationPrime(sum)
+    //TODO assert forwardError isFinite
+}
 //TODO getForwardError
+__host__ double Neuron::getForwardError() {
+    double _forwardError = 0.0;
+    cudaMemcpy(&_forwardError, forwardError, sizeof(double), cudaMemcpyDeviceToHost);
+    return _forwardError;
+}
 
 
 //*************************************************************************************
@@ -251,14 +263,36 @@ __host__ void Neuron::propErrorForward(int _index, double _value){
 //*************************************************************************************
 
 //TODO setBackwardError
+__host__ void Neuron::setBackwardError(double _leadError){
+    //TODO use doActivationPrime(sum)
+    gpu_setDouble<<<1,1>>>(backwardError,_leadError*doActivationPrime(sum));
+}
+
 
 //TODO propErrorBackward
+__host__ void Neuron::propErrorBackward(double _nextSum){
+    //TODO use doActivationPrime(sum)
+    gpu_setDouble<<<1,1>>>(backwardError,_leadError*doActivationPrime(sum));
+}
 
 //TODO getBackwardError
+__host__ double Neuron::getBackwardError(){
+    double _backwardError = 0.0;
+    cudaMemcpy(&_backwardError, backwardError, sizeof(double), cudaMemcpyDeviceToHost);
+    return _backwardError;
+}
 
 //TODO getEchoError
-
+__host__ double Neuron::getEchoError() {
+    double _echoError = 0.0;
+    cudaMemcpy(&_echoError, echoError, sizeof(double), cudaMemcpyDeviceToHost);
+    return _echoError;
+}
 //TODO echoErrorBackward
+__host__ void Neuron::echoErrorBackward(double _nexSum) {
+    //TODO use doActivationPrime(sum)
+    gpu_setDouble<<<1,1>>>(echoError,_nextSum*doActivationPrime(sum));
+}
 
 //*************************************************************************************
 //MID propagation of error

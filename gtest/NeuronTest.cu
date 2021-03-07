@@ -80,7 +80,7 @@ TEST(NeuronTest, testSumAndMaxMin){
 }
 
 TEST(NeuronTest, testDotProduct){
-    double *d_list1, *d_list2, *list1, *list2,*d_value, *d_target, *target;
+    double *d_list1, *d_list2, *list1, *list2, *d_value, *d_target, *target;
 
     gpu_allocateDouble(&d_target, 0.0);
     cudaMalloc((void**)&d_list1, sizeof(double)*4);
@@ -104,7 +104,7 @@ TEST(NeuronTest, testDotProduct){
     cudaMemcpy(d_list1, list1, sizeof(double)*4,cudaMemcpyHostToDevice);
     cudaMemcpy(d_list2, list2, sizeof(double)*4,cudaMemcpyHostToDevice);
 
-    gpu_dotProduct<<<1,4>>>(d_list1, d_list2, d_value, d_target, 4);
+    gpu_dotProduct<<<1,2>>>(d_list1, d_list2, d_value, d_target, 4);
 
     cudaMemcpy(target, d_target, sizeof(double), cudaMemcpyDeviceToHost);
 

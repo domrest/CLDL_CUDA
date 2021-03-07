@@ -93,7 +93,15 @@ public:
     __host__ void setForwardError(double _value);
     __host__ double getInputError(int index);
     __host__ void propErrorForward(int _index, double _value);
+    __host__ void calcForwardError();
+    __host__ double getForwardError();
 
+    //Back Propagation of errors:
+    __host__ void setBackwardError(double _leadError);
+    __host__ void propErrorBackward(double _nextSum);
+    __host__ double getBackwardError();
+    __host__ double getEchoError();
+    __host__ void echoErrorBackward(double _nexSum);
 
 private:
     // initialisation:
