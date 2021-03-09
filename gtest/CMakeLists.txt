@@ -18,6 +18,6 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR} ../include)
 
 # 'Google_Tests_run' is the target name
 # 'test1.cpp tests2.cpp' are source files with tests
-add_executable(Google_Tests_run NeuronTest.cu)
+add_executable(Google_Tests_run NeuronTest.cu LayerTest.cu)
 target_link_libraries(Google_Tests_run PRIVATE CLDL gtest gtest_main)
 

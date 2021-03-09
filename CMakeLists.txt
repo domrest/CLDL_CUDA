@@ -9,7 +9,8 @@ project(CLDL LANGUAGES CUDA CXX)
 add_library(CLDL
 #        lib/Layer.cpp
 #        lib/Net.cpp
-        lib/Neuron.cu)
+        lib/Neuron.cu
+        lib/Layer.cu)
 
 target_include_directories(CLDL PUBLIC include)
 
