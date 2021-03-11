@@ -68,6 +68,10 @@ __host__ void Layer::setlearningRate(double _learningRate){
 //*************************************************************************************
 
 //TODO setInputs
+__host__ void Layer::setInputs(const double *_inputs) {
+    inputs = _inputs;
+    //do stuff
+}
 
 //TODO propInputs
 
