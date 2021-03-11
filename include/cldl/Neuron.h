@@ -1,20 +1,7 @@
 #pragma once
 
-#include <stdio.h>
 #include <assert.h>
-#include <iostream>
-#include <ctgmath>
-#include <cstdlib>
-#include <cstdio>
-#include <cassert>
-#include <fstream>
-#include <math.h>
-#include <fstream>
-#include <string>
-#include <numeric>
-#include <vector>
 #include <cuda_runtime.h>
-#define CUDA_HOSTDEV __host__ __device__
 
 using namespace std;
 
@@ -80,15 +67,27 @@ public:
      */
     __host__ void initNeuron(int _neuronIndex, int _layerIndex, weightInitMethod _wim, biasInitMethod _bim, actMethod _am);
 
+    /** Sets the learning rate.
+     * @param _learningRate Sets the learning rate for this neuron.
+     **/
     __host__ void setLearningRate(double _learningRate);
+
     __host__ double getLearningRate();
     __host__ int getNInputs();
 
+    /**
+     * Sets the error of the neuron in the first hidden layer that is to be propagated forward
+     * @param _value value of the error
+     */
     __host__ void setForwardError(double _value);
-    __host__ double getInputError(int index);
+    __host__ double getInputError(int _index);
+    /**
+     * Sets the forward propagating error of the neuron in layers other than the first hidden layer
+     * @param _index index of the error
+     * @param _value value of the error
+     */
     __host__ void propErrorForward(int _index, double _value);
-
-
+    __host__ double Neuron::doActivation(double _sum);
 
 
 private:
@@ -143,6 +142,8 @@ private:
 
 
 };
+
+//Cuda Kernels
 __global__ void gpu_setValuesInArray(double _value, double* list);
 __global__ void gpu_setValueInArray(double _value, int index, double* list);
 __global__ void gpu_getSumAndMaxMin(double* sum, double* max_list, double* list_min, double* list, int length);
@@ -152,3 +153,11 @@ __global__ void gpu_setInt(int* pointer, int value);
 
 __host__ void gpu_allocateDouble(double** pointer, double value);
 __global__ void gpu_setDouble(double* pointer, double value);
+
+__global__ void gpu_doActivation(double *output, double _sum, int *actMet);
+__global__ void gpu_doActivationPrime(double *output, double _input, int *actMet);
+
+
+__device__ void device_doActivation(double* output, double _sum, int* actMet);
+
+__device__ void device_doActivationPrime(double* output, double _sum, int* actMet);
