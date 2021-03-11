@@ -113,6 +113,7 @@ void Neuron::setInput(int _index,  double _value) {
     //cout << "Neuron the input is: " << _value << endl;
 }
 
+
 void Neuron::propInputs(int _index,  double _value){
     /*works like setInput function expect it only applies
      * to the neurons in the hidden and output layers
@@ -273,11 +274,11 @@ void Neuron::updateWeights(){
         force  = 1; //forces a bigger change on the first layer for visualisation in greyscale
     }
     overallError = (  globalCoeff    * globalError
-                    + backwardsCoeff * backwardError
-                    + midCoeff       * forwardError
-                    + forwardCoeff   * midError
-                    + localCoeff     * localError
-                    + echoCoeff      * echoError);
+                      + backwardsCoeff * backwardError
+                      + midCoeff       * forwardError
+                      + forwardCoeff   * midError
+                      + localCoeff     * localError
+                      + echoCoeff      * echoError);
 
     for (int i=0; i<nInputs; i++){
         weights[i] += learningRate * inputs[i] * overallError * force;
@@ -330,7 +331,7 @@ double Neuron::doActivationPrime(double _input){
 //*************************************************************************************
 
 void Neuron::setGlobalError(double _globalError){
-  globalError = _globalError;
+    globalError = _globalError;
 }
 
 double Neuron::getGlobalError(){
@@ -393,15 +394,15 @@ double Neuron::getSumOutput(){
 }
 
 double Neuron::getMaxWeight(){
-  return maxWeight;
+    return maxWeight;
 }
 
 double Neuron::getMinWeight(){
-  return minWeight;
+    return minWeight;
 }
 
 double Neuron::getSumWeight(){
-  return weightSum;
+    return weightSum;
 }
 
 double Neuron::getWeightChange(){
@@ -437,23 +438,23 @@ double Neuron::getInitWeights(int _inputIndex){
 //*************************************************************************************
 
 void Neuron::saveWeights(){
-  char l = '0';
-  char n = '0';
-  l += myLayerIndex + 1;
-  n += myNeuronIndex + 1;
-  string name = "w";
-  name += 'L';
-  name += l;
-  name += 'N';
-  name += n;
-  name += ".csv";
-  std::ofstream Icofile;
-  Icofile.open(name, fstream::app);
-  for (int i=0; i<nInputs; i++){
-    Icofile << weights[i] << " " ;
-  }
-  Icofile << "\n";
-  Icofile.close();
+    char l = '0';
+    char n = '0';
+    l += myLayerIndex + 1;
+    n += myNeuronIndex + 1;
+    string name = "w";
+    name += 'L';
+    name += l;
+    name += 'N';
+    name += n;
+    name += ".csv";
+    std::ofstream Icofile;
+    Icofile.open(name, fstream::app);
+    for (int i=0; i<nInputs; i++){
+        Icofile << weights[i] << " " ;
+    }
+    Icofile << "\n";
+    Icofile.close();
 }
 
 void Neuron::printNeuron(){
