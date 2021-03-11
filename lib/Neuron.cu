@@ -1,19 +1,8 @@
 #include "cldl/Neuron.h"
 
-#include <assert.h>
-#include <iostream>
-#include <ctgmath>
-#include <cstdlib>
-#include <cstdio>
-#include <cassert>
-#include <fstream>
-#include <iostream>
-#include <math.h>
-#include <string>
-#include <numeric>
-#include <vector>
+#include <cuda_runtime.h>
 
-using namespace std;
+
 
 //*************************************************************************************
 // constructor de-constructor
@@ -226,11 +215,11 @@ __host__ void Neuron::setForwardError(double _value) {
     gpu_setValuesInArray<<<1, getNInputs()>>>(_value, inputErrors);
 }
 
-__host__ double Neuron::getInputError(int index) {
+__host__ double Neuron::getInputError(int _index) {
     double _inputError = 0.0;
-    assert(index < getNInputs());
+    assert(_index < getNInputs());
 
-    double* inputError = inputErrors + index;
+    double* inputError = inputErrors + _index;
     cudaMemcpy(&_inputError, inputError, sizeof(double), cudaMemcpyDeviceToHost);
     return _inputError;
 }
@@ -348,6 +337,8 @@ __host__ double Neuron::getMidError() {
 
 //TODO doActivation
 
+
+
 //TODO doActivationPrime
 
 //*************************************************************************************
@@ -398,6 +389,9 @@ __host__ int Neuron::getNInputs(){
     return _nInputs;
 }
 
+
+
+
 //TODO getWeights
 
 //TODO getInitWeights
@@ -410,6 +404,49 @@ __host__ int Neuron::getNInputs(){
 
 //TODO printNeuron
 
+//*************************************************************************************
+//helper host functions:
+//*************************************************************************************
+__host__ void gpu_allocateInt(int** pointer, int value){
+    cudaMalloc(pointer, sizeof(int));
+    gpu_setInt<<<1,1>>>(*pointer, value);
+}
+__host__ void gpu_allocateDouble(double** pointer, double value){
+    cudaMalloc(pointer, sizeof(double));
+    gpu_setDouble<<<1,1>>>(*pointer, value);
+}
+
+//*************************************************************************************
+//device CUDA kernels:
+//*************************************************************************************
+__device__ void device_doActivation(double* output, double _sum, int* actMet) {
+    switch(*actMet){
+        case 0:
+            *output = (1/(1+(exp(-_sum)))) - 0.5;
+            break;
+        case 1:
+            *output = tanh(_sum);
+            break;
+        case 2:
+            *output = _sum;
+            break;
+    }
+}
+
+__device__ void device_doActivationPrime(double* output, double _input, int* actMet){
+    switch(*actMet){
+        case 0:
+            device_doActivation(output, _input, actMet);
+            *output = 1 * (0.5 + *output) * (0.5 - *output); //exp(-_input) / pow((exp(-_input) + 1),2);
+            break;
+        case 1:
+            *output = 1 - pow(tanh(_input), 2.0);
+            break;
+        case 2:
+            *output = 1;
+            break;
+    }
+}
 
 //*************************************************************************************
 //global CUDA kernels:
@@ -431,20 +468,26 @@ __global__ void gpu_getSumAndMaxMin(double* sum, double* max_list, double* list_
     }
 }
 
-__host__ void gpu_allocateInt(int** pointer, int value){
-    cudaMalloc((void**)pointer, sizeof(int));
-    gpu_setInt<<<1,1>>>(*pointer, value);
-}
+
 __global__ void gpu_setInt(int* pointer, int value) {
     *pointer = value;
 }
-__host__ void gpu_allocateDouble(double** pointer, double value){
-    cudaMalloc((void**)pointer, sizeof(double));
-    gpu_setDouble<<<1,1>>>(*pointer, value);
-}
+
 __global__ void gpu_setDouble(double* pointer, double value){
     *pointer = value;
 }
+
+__global__ void gpu_doActivation(double* output, double _sum, int* actMet) {
+    double sum = _sum;
+    device_doActivation(output, sum, actMet);
+}
+
+__global__ void gpu_doActivationPrime(double* output, double _input, int* actMet) {
+    double input = _input;
+    device_doActivationPrime(output, input, actMet);
+}
+
+
 
 __global__ void gpu_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength){
     int idx = threadIdx.x;

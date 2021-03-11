@@ -1,14 +1,25 @@
 #include "cldl/Neuron.h"
 #include "gtest/gtest.h"
-#include <cuda_runtime.h>
 
 using namespace std;
 
+
+TEST(CUDATest, testCudaMalloc){
+    double *d_a;
+    double a = 2.0;
+    cudaMallocManaged(&d_a, sizeof(double));
+    gpu_setDouble<<<1,1>>>(d_a, 1.0);
+    cudaMemcpy(&a, d_a, sizeof(double), cudaMemcpyDeviceToHost);
+
+    ASSERT_EQ(a, 1.0);
+
+}
 
 TEST(NeuronTest, testNeuronIntialisationAndNInputs){
     Neuron *n;
     n = new Neuron(1);
     ASSERT_EQ(n->getNInputs(), 1);
+
 }
 
 
@@ -79,6 +90,53 @@ TEST(NeuronTest, testSumAndMaxMin){
 
 }
 
+TEST(NeuronTest, TestDoActivation){
+    double *d_result;
+    double result = 0;
+    int *actMet;
+    gpu_allocateDouble(&d_result, 0.0);
+    gpu_allocateInt(&actMet, 1);
+    gpu_doActivation<<<1,1>>>(d_result, 2, actMet);
+    cudaMemcpy(&result, d_result, sizeof(double), cudaMemcpyDeviceToHost);
+    ASSERT_DOUBLE_EQ(result, 0.9640275800758169);
+
+    gpu_setDouble<<<1,1>>>(d_result, 0.0);
+    gpu_setInt<<<1,1>>>(actMet, 2);
+    gpu_doActivation<<<1,1>>>(d_result, 2, actMet);
+    cudaMemcpy(&result, d_result, sizeof(double), cudaMemcpyDeviceToHost);
+    ASSERT_DOUBLE_EQ(result, 2.0);
+
+    gpu_setDouble<<<1,1>>>(d_result, 0.0);
+    gpu_setInt<<<1,1>>>(actMet, 0);
+    gpu_doActivation<<<1,1>>>(d_result, 2, actMet);
+    cudaMemcpy(&result, d_result, sizeof(double), cudaMemcpyDeviceToHost);
+    ASSERT_DOUBLE_EQ(result, 0.38079707797788231);
+
+}
+
+TEST(NeuronTest, TestDoActivationPrime){
+    double *d_result;
+    double result = 0;
+    int *actMet;
+    gpu_allocateDouble(&d_result, 0.0);
+    gpu_allocateInt(&actMet, 0);
+    gpu_doActivationPrime<<<1,1>>>(d_result, 2, actMet);
+    cudaMemcpy(&result, d_result, sizeof(double), cudaMemcpyDeviceToHost);
+    ASSERT_DOUBLE_EQ(result, 0.10499358540350662);
+
+    gpu_setDouble<<<1,1>>>(d_result, 0.0);
+    gpu_setInt<<<1,1>>>(actMet, 1);
+    gpu_doActivationPrime<<<1,1>>>(d_result, 2, actMet);
+    cudaMemcpy(&result, d_result, sizeof(double), cudaMemcpyDeviceToHost);
+    ASSERT_DOUBLE_EQ(result, 0.070650824853164429);
+
+    gpu_setDouble<<<1,1>>>(d_result, 0.0);
+    gpu_setInt<<<1,1>>>(actMet, 2);
+    gpu_doActivationPrime<<<1,1>>>(d_result, 2, actMet);
+    cudaMemcpy(&result, d_result, sizeof(double), cudaMemcpyDeviceToHost);
+    ASSERT_DOUBLE_EQ(result, 1.0);
+
+}
 TEST(NeuronTest, testDotProduct){
     double *d_list1, *d_list2, *list1, *list2, *d_value, *d_target, *target;
 
