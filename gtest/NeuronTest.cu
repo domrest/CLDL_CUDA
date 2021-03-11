@@ -111,6 +111,22 @@ TEST(NeuronTest, testDotProduct){
     ASSERT_EQ(*target, 10.0);
 }
 
+TEST(NeuronTest, testSetMidError){
+    Neuron *n;
+    n = new Neuron(4);
+    n->setMidError(2.0);
+    ASSERT_EQ(n->getInputMidErrors(1), 2.0);
+    n->setMidError(3.0);
+    ASSERT_EQ(n->getInputMidErrors(1), 3.0);
+}
+
+TEST(NeuronTest, testCalcMidError){
+    Neuron *n;
+    n = new Neuron(4);
+    n->setMidError(2.0);
+    n->calcMidError();
+    ASSERT_EQ(n->getMidError(), 0.0);
+}
 
 int main(int argc, char** argv){
     ::testing::InitGoogleTest(&argc, argv);

@@ -242,14 +242,15 @@ __host__ void Neuron::propErrorForward(int _index, double _value){
 
 
 //TODO calcForwardError
-__host__ void Neuron::calcForwardError() {
-    double* _value;
-    cudaMalloc((void**)&_value, sizeof(double)*getNInputs());
-    gpu_dotProduct<<<1, getNInputs()>>>(inputErrors, weights, _value, fowardError, getNInputs());
+//__host__ void Neuron::calcForwardError() {
+//    double* _value;
+//    cudaMalloc((void**)&_value, sizeof(double)*getNInputs());
+//    gpu_dotProduct<<<1, getNInputs()>>>(inputErrors, weights, _value, fowardError, getNInputs());
 
     //TODO forwardError must be multiplied with doActivationPrime(sum)
     //TODO assert forwardError isFinite
-}
+//}
+
 //TODO getForwardError
 __host__ double Neuron::getForwardError() {
     double _forwardError = 0.0;
@@ -263,17 +264,17 @@ __host__ double Neuron::getForwardError() {
 //*************************************************************************************
 
 //TODO setBackwardError
-__host__ void Neuron::setBackwardError(double _leadError){
-    //TODO use doActivationPrime(sum)
-    gpu_setDouble<<<1,1>>>(backwardError,_leadError*doActivationPrime(sum));
-}
+//__host__ void Neuron::setBackwardError(double _leadError){
+//    //TODO use doActivationPrime(sum)
+//    gpu_setDouble<<<1,1>>>(backwardError,_leadError*doActivationPrime(sum));
+//}
 
 
-//TODO propErrorBackward
-__host__ void Neuron::propErrorBackward(double _nextSum){
-    //TODO use doActivationPrime(sum)
-    gpu_setDouble<<<1,1>>>(backwardError,_leadError*doActivationPrime(sum));
-}
+//TODO propErrorBackward make it
+//__host__ void Neuron::propErrorBackward(double _nextSum){
+//    //TODO use doActivationPrime(sum)
+//    gpu_setDouble<<<1,1>>>(backwardError,_leadError*doActivationPrime(sum));
+//}
 
 //TODO getBackwardError
 __host__ double Neuron::getBackwardError(){
@@ -289,21 +290,43 @@ __host__ double Neuron::getEchoError() {
     return _echoError;
 }
 //TODO echoErrorBackward
-__host__ void Neuron::echoErrorBackward(double _nexSum) {
-    //TODO use doActivationPrime(sum)
-    gpu_setDouble<<<1,1>>>(echoError,_nextSum*doActivationPrime(sum));
-}
+//__host__ void Neuron::echoErrorBackward(double _nexSum) {
+//    //TODO use doActivationPrime(sum)
+//    gpu_setDouble<<<1,1>>>(echoError,_nextSum*doActivationPrime(sum));
+//}
 
 //*************************************************************************************
 //MID propagation of error
 //*************************************************************************************
 
 //TODO setMidError
+__host__ void Neuron::setMidError(double _leadMidError) {
+    gpu_setValuesInArray<<<1, getNInputs()>>>(_leadMidError, inputMidErrors);
+}
 
+__host__ double Neuron::getInputMidErrors(int index) {
+    double _inputMidError = 0.0;
+    assert(index < getNInputs());
+
+    double* inputMidError = inputMidErrors + index;
+    cudaMemcpy(&_inputMidError, inputMidError, sizeof(double), cudaMemcpyDeviceToHost);
+    return _inputMidError;
+}
 //TODO calcMidError
+__host__ void Neuron::calcMidError() {
+    double* _value;
+    cudaMalloc((void**)&_value, sizeof(double)*getNInputs());
+    gpu_dotProduct<<<1, getNInputs()>>>(inputMidErrors, weights, _value, midError, getNInputs());
+    // TODO midError with doActivationPrime
+}
 
 
 //TODO getMidError
+__host__ double Neuron::getMidError() {
+    double _midError = 0.0;
+    cudaMemcpy(&_midError, backwardError, sizeof(double), cudaMemcpyDeviceToHost);
+    return _midError;
+}
 
 //TODO propMidErrorForward
 

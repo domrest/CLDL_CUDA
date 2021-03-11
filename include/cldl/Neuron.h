@@ -103,6 +103,12 @@ public:
     __host__ double getEchoError();
     __host__ void echoErrorBackward(double _nexSum);
 
+    //Mid Propagation of errors:
+    __host__ void setMidError(double _leadMidError);
+    __host__ double getInputMidErrors(int index);
+    __host__ void calcMidError();
+    __host__ double getMidError();
+
 private:
     // initialisation:
     int *nInputs;
