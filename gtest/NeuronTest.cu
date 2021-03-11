@@ -31,7 +31,21 @@ TEST(NeuronTest, testSetLearningRate){
     ASSERT_EQ(n->getLearningRate(), 2.0);
 }
 
-TEST(NeuronTest, testSetInputErrors){
+TEST(Neuron, testSetInputs){
+    Neuron *n;
+    n = new Neuron(3);
+    n->setInput(0,2.0);
+    n->setInput(1,4.0);
+    n->setInput(2,6.0);
+
+    n->propInputs(1,3.0);
+
+    ASSERT_EQ(n->getInput(0), 2.0);
+    ASSERT_EQ(n->getInput(1), 3.0);
+    ASSERT_EQ(n->getInput(2), 6.0);
+}
+
+TEST(NeuronTest, testSetInputErrors) {
     Neuron *n;
     n = new Neuron(4);
     n->setForwardError(2.0);
@@ -122,6 +136,54 @@ TEST(NeuronTest, TestDoActivationPrime){
     cudaMemcpy(&result, d_result, sizeof(double), cudaMemcpyDeviceToHost);
     ASSERT_DOUBLE_EQ(result, 1.0);
 
+}
+TEST(NeuronTest, testDotProduct){
+    double *d_list1, *d_list2, *list1, *list2, *d_value, *d_target, *target;
+
+    gpu_allocateDouble(&d_target, 0.0);
+    cudaMalloc((void**)&d_list1, sizeof(double)*4);
+    cudaMalloc((void**)&d_list2, sizeof(double)*4);
+    cudaMalloc((void**)&d_value, sizeof(double)*4);
+
+    list1 = new double[4];
+    list1[0] = 1.0;
+    list1[1] = 1.0;
+    list1[2] = 1.0;
+    list1[3] = 1.0;
+
+    list2 = new double[4];
+    list2[0] = 1.0;
+    list2[1] = 2.0;
+    list2[2] = 3.0;
+    list2[3] = 4.0;
+
+    target = (double*)malloc(sizeof(double));
+
+    cudaMemcpy(d_list1, list1, sizeof(double)*4,cudaMemcpyHostToDevice);
+    cudaMemcpy(d_list2, list2, sizeof(double)*4,cudaMemcpyHostToDevice);
+
+    gpu_dotProduct<<<1,2>>>(d_list1, d_list2, d_value, d_target, 4);
+
+    cudaMemcpy(target, d_target, sizeof(double), cudaMemcpyDeviceToHost);
+
+    ASSERT_EQ(*target, 10.0);
+}
+
+TEST(NeuronTest, testSetMidError){
+    Neuron *n;
+    n = new Neuron(4);
+    n->setMidError(2.0);
+    ASSERT_EQ(n->getInputMidErrors(1), 2.0);
+    n->setMidError(3.0);
+    ASSERT_EQ(n->getInputMidErrors(1), 3.0);
+}
+
+TEST(NeuronTest, testCalcMidError){
+    Neuron *n;
+    n = new Neuron(4);
+    n->setMidError(2.0);
+    n->calcMidError();
+    ASSERT_EQ(n->getMidError(), 0.0);
 }
 
 int main(int argc, char** argv){
