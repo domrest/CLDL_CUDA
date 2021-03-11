@@ -67,6 +67,11 @@ public:
      */
     __host__ void initNeuron(int _neuronIndex, int _layerIndex, weightInitMethod _wim, biasInitMethod _bim, actMethod _am);
 
+    //Forward Propagation of inputs:
+    __host__ void setInput(int _index,  double _value);
+    __host__ void propInputs(int _index,  double _value);
+    __host__ double getInput(int index);
+
     /** Sets the learning rate.
      * @param _learningRate Sets the learning rate for this neuron.
      **/
@@ -79,6 +84,7 @@ public:
      * Sets the error of the neuron in the first hidden layer that is to be propagated forward
      * @param _value value of the error
      */
+    //Forward Propagation of errors:
     __host__ void setForwardError(double _value);
     __host__ double getInputError(int _index);
     /**
@@ -89,6 +95,21 @@ public:
     __host__ void propErrorForward(int _index, double _value);
     __host__ double Neuron::doActivation(double _sum);
 
+    __host__ void calcForwardError();
+    __host__ double getForwardError();
+
+    //Back Propagation of errors:
+    __host__ void setBackwardError(double _leadError);
+    __host__ void propErrorBackward(double _nextSum);
+    __host__ double getBackwardError();
+    __host__ double getEchoError();
+    __host__ void echoErrorBackward(double _nexSum);
+
+    //Mid Propagation of errors:
+    __host__ void setMidError(double _leadMidError);
+    __host__ double getInputMidErrors(int index);
+    __host__ void calcMidError();
+    __host__ double getMidError();
 
 private:
     // initialisation:
@@ -153,6 +174,7 @@ __global__ void gpu_setInt(int* pointer, int value);
 
 __host__ void gpu_allocateDouble(double** pointer, double value);
 __global__ void gpu_setDouble(double* pointer, double value);
+<<<<<<<<< Temporary merge branch 1
 
 __global__ void gpu_doActivation(double *output, double _sum, int *actMet);
 __global__ void gpu_doActivationPrime(double *output, double _input, int *actMet);
@@ -161,3 +183,6 @@ __global__ void gpu_doActivationPrime(double *output, double _input, int *actMet
 __device__ void device_doActivation(double* output, double _sum, int* actMet);
 
 __device__ void device_doActivationPrime(double* output, double _sum, int* actMet);
+
+
+__global__ void gpu_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength);
