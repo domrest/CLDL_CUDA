@@ -32,7 +32,7 @@ TEST(NeuronTest, testSetLearningRate){
     ASSERT_EQ(n->getLearningRate(), 2.0);
 }
 
-TEST(Neuron, testSetInputs){
+TEST(NeuronTest, testSetInputs){
     Neuron *n;
     n = new Neuron(3);
     n->setInput(0,2.0);

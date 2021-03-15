@@ -76,7 +76,6 @@ public:
      * @param _learningRate Sets the learning rate for this neuron.
      **/
     __host__ void setLearningRate(double _learningRate);
-
     __host__ double getLearningRate();
     __host__ int getNInputs();
 
@@ -111,8 +110,16 @@ public:
     __host__ void calcMidError();
     __host__ double getMidError();
 
-private:
-    // initialisation:
+
+    // Getters
+    __host__ double getOutput();
+    __host__ double getSumOutput();
+    __host__ double getMaxWeight();
+    __host__ double getMinWeight();
+    __host__ double getSumWeight();
+    __host__ double getWeightChange();
+
+// initialisation:
     int *nInputs;
     int *myLayerIndex;
     int *myNeuronIndex;
