@@ -26,5 +26,3 @@ TEST(LayerTest, testLayerSetLearningRate) {
     n = l->getNeuron(0);
     ASSERT_EQ(n->getLearningRate(), 0.1);
 }
-
-

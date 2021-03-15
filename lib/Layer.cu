@@ -56,6 +56,8 @@ __host__ void Layer::initLayer(int _layerIndex, Neuron::weightInitMethod _wim, N
 }
 
 
+
+
 __host__ void Layer::setlearningRate(double _learningRate){
     learningRate=_learningRate;
     for (int i=0; i<nNeurons; i++){
@@ -77,13 +79,28 @@ __host__ void Layer::setlearningRate(double _learningRate){
 //forward propagation of error:
 //*************************************************************************************
 
-__host__ void Layer::setForwardError(double _leadForwardError){
-    /*this is only for the first layer*/
-    leadForwardError=_leadForwardError;
-    for (int i=0; i<nNeurons; i++){
-        neurons[i]->setForwardError(leadForwardError);
-    }
-}
+//__host__ void Layer::setForwardError(double _leadForwardError) {
+//    double** pointerList = new double*[nNeurons];
+//    int* nInputList = new int[nNeurons];
+//
+//    for (int i=0; i<nNeurons; i++){
+//        pointerList[i] = neurons[i]->getInputErrorPointer();
+//        nInputList[i] = neurons[1]->getNInputs();
+//    }
+//
+//}
+
+//__global__ void gpu_setForwardError(double _leadForwardError, double** pointerList, int* nInputList) {
+//
+//}
+//
+//__host__ void Layer::setForwardError(double _leadForwardError){
+//    /*this is only for the first layer*/
+//    leadForwardError=_leadForwardError;
+//    for (int i=0; i<nNeurons; i++){
+//        neurons[i]->setForwardError(leadForwardError);
+//    }
+//}
 
 //TODO setInputs
 
