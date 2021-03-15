@@ -99,10 +99,10 @@ public:
 
     //Back Propagation of errors:
     __host__ void setBackwardError(double _leadError);
-    __host__ void propErrorBackward(double _nextSum);
     __host__ double getBackwardError();
+    __device__ void echoErrorBackward(double _nextSum, Neuron* n);
     __host__ double getEchoError();
-    __host__ void echoErrorBackward(double _nexSum);
+
 
     //Mid Propagation of errors:
     __host__ void setMidError(double _leadMidError);
@@ -181,11 +181,10 @@ __global__ void gpu_setInt(int* pointer, int value);
 
 __host__ void gpu_allocateDouble(double** pointer, double value);
 __global__ void gpu_setDouble(double* pointer, double value);
-<<<<<<<<< Temporary merge branch 1
+
 
 __global__ void gpu_doActivation(double *output, double _sum, int *actMet);
 __global__ void gpu_doActivationPrime(double *output, double _input, int *actMet);
-
 
 __device__ void device_doActivation(double* output, double _sum, int* actMet);
 
@@ -193,3 +192,5 @@ __device__ void device_doActivationPrime(double* output, double _sum, int* actMe
 
 
 __global__ void gpu_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength);
+
+__global__ void gpu_echoErrorBackward(double _nextSum, Neuron* n);
