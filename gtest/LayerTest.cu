@@ -4,6 +4,28 @@
 
 using namespace std;
 
+__global__ void checkNInputs(Neuron* n){
+    int i = threadIdx.x;
+    *n[i].nInputs = 2;
+}
+
+TEST(CUDATest, testObjectPointerCalls){
+    Neuron* n;
+    n = (Neuron*) (malloc(sizeof(Neuron) * 5));
+    for (int i=0; i<5; i++){
+        Neuron* j = new Neuron(1);
+        n[i] = *j;
+    }
+
+    Neuron* d_n;
+    cudaMalloc((void**) &d_n, sizeof(Neuron)*5);
+    cudaMemcpy(d_n, n, sizeof(Neuron)*5, cudaMemcpyHostToDevice);
+
+    checkNInputs<<<1,5>>>(d_n);
+    ASSERT_EQ(n[2].getNInputs(), 2);
+
+}
+
 TEST(LayerTest, testLayerConstructor){
     Layer *l;
     l = new Layer(10, 10);
