@@ -1,6 +1,5 @@
 #include "cldl/Layer.h"
 #include "gtest/gtest.h"
-#include <cuda_runtime.h>
 
 using namespace std;
 
@@ -21,6 +20,8 @@ TEST(LayerTest, testLayerSetLearningRate) {
     Layer *l;
     l = new Layer(10, 10);
     l->setlearningRate(0.1);
+
+    cudaDeviceSynchronize();
 
     Neuron *n;
     n = l->getNeuron(0);

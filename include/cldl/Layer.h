@@ -304,6 +304,7 @@ private:
     double learningRate = 0;
     int myLayerIndex = 0;
     Neuron **neurons = 0;
+    Neuron **gpu_neurons = 0;
     
     int layerHasReported = 0;
 

@@ -17,50 +17,51 @@
 #include <vector>
 #include <fstream>
 
-// TODO private variables
 
+
+__global__ void gpu_setLearningRate(Neuron** n, double _learningRate){
+    //int i = threadIdx.x;
+    *n[0]->learningRate = _learningRate;
+}
 
 __host__ Layer::Layer(int _nNeurons, int _nInputs){
     nNeurons = _nNeurons; // number of neurons in this layer
     nInputs = _nInputs; // number of inputs to each neuron
-    neurons = new Neuron*[nNeurons];
-    /* dynamic allocation of memory to n number of
-     * neuron-pointers and returning a pointer, "neurons",
-     * to the first element */
-    for (int i=0;i<nNeurons;i++){
-        neurons[i]=new Neuron(nInputs);
+
+    neurons = (Neuron**) (malloc(sizeof(Neuron) * nNeurons));
+    for (int i=0; i<nNeurons; i++){
+       neurons[i] = new Neuron(nInputs);
     }
-    /* each element of "neurons" pointer is itself a pointer
-     * to a neuron object with specific no. of inputs */
+
+    cudaMalloc( (void**) &gpu_neurons, sizeof(Neuron)*nNeurons);
+    cudaMemcpy(gpu_neurons, neurons, sizeof(Neuron)*nNeurons, cudaMemcpyHostToDevice);
 }
 
-__host__ Layer::~Layer(){
+/*__host__ Layer::~Layer(){
     for(int i=0;i<nNeurons;i++) {
         delete neurons[i];
     }
-    delete[] neurons;
-    /* it is important to delete any dynamic
-     * memory allocation created by "new" */
-}
+    free(neurons);
+    cudaFree(gpu_neurons);
+}*/
 
 
 //*************************************************************************************
 //initialisation:
 //*************************************************************************************
 
-__host__ void Layer::initLayer(int _layerIndex, Neuron::weightInitMethod _wim, Neuron::biasInitMethod _bim, Neuron::actMethod _am){
-    myLayerIndex = _layerIndex;
-    for (int i=0; i<nNeurons; i++){
-        neurons[i]->initNeuron(i, myLayerIndex, _wim, _bim, _am);
-    }
-}
+//__host__ void Layer::initLayer(int _layerIndex, Neuron::weightInitMethod _wim, Neuron::biasInitMethod _bim, Neuron::actMethod _am){
+//    myLayerIndex = _layerIndex;
+//    for (int i=0; i<nNeurons; i++){
+//        neurons[i]->initNeuron(i, myLayerIndex, _wim, _bim, _am);
+//    }
+//}
 
 
 __host__ void Layer::setlearningRate(double _learningRate){
     learningRate=_learningRate;
-    for (int i=0; i<nNeurons; i++){
-        neurons[i]->setLearningRate(learningRate);
-    }
+    gpu_setLearningRate<<<1,1>>>(gpu_neurons, learningRate);
+    //neurons[0]->setLearningRate(0.1);
 }
 
 //*************************************************************************************
@@ -68,10 +69,10 @@ __host__ void Layer::setlearningRate(double _learningRate){
 //*************************************************************************************
 
 //TODO setInputs
-__host__ void Layer::setInputs(const double *_inputs) {
-    inputs = _inputs;
-    //do stuff
-}
+//__host__ void Layer::setInputs(const double *_inputs) {
+//    inputs = _inputs;
+//    gpu_setInputs<<<1,nNeurons>>>(gpu_neurons, inputs);
+//}
 
 //TODO propInputs
 
@@ -81,21 +82,21 @@ __host__ void Layer::setInputs(const double *_inputs) {
 //forward propagation of error:
 //*************************************************************************************
 
-__host__ void Layer::setForwardError(double _leadForwardError){
-    /*this is only for the first layer*/
-    leadForwardError=_leadForwardError;
-    for (int i=0; i<nNeurons; i++){
-        neurons[i]->setForwardError(leadForwardError);
-    }
-}
+//__host__ void Layer::setForwardError(double _leadForwardError){
+//    /*this is only for the first layer*/
+//    leadForwardError=_leadForwardError;
+//    for (int i=0; i<nNeurons; i++){
+//        neurons[i]->setForwardError(leadForwardError);
+//    }
+//}
 
 //TODO setInputs
 
-__host__ void Layer::propErrorForward(int _index, double _value){
-    for (int i=0; i<nNeurons; i++){
-        neurons[i]->propErrorForward(_index, _value);
-    }
-}
+//__host__ void Layer::propErrorForward(int _index, double _value){
+//    for (int i=0; i<nNeurons; i++){
+//        neurons[i]->propErrorForward(_index, _value);
+//    }
+//}
 
 //TODO calcForwardError
 
@@ -170,7 +171,6 @@ __host__ void Layer::propErrorForward(int _index, double _value){
 //*************************************************************************************
 
 __host__ Neuron* Layer::getNeuron(int _neuronIndex){
-    assert(_neuronIndex < nNeurons);
     return (neurons[_neuronIndex]);
 }
 
