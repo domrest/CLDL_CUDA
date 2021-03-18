@@ -304,8 +304,8 @@ private:
     int nInputs = 0;
     double learningRate = 0;
     int myLayerIndex = 0;
-    Neuron **neurons = 0;
-    Neuron **gpu_neurons = 0;
+    Neuron *neurons;
+    Neuron *gpu_neurons;
     
     int layerHasReported = 0;
 

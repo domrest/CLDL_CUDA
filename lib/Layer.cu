@@ -19,18 +19,19 @@
 
 
 
-__global__ void gpu_setLearningRate(Neuron** n, double _learningRate){
+__global__ void gpu_setLearningRate(Neuron* n, double _learningRate){
     int i = threadIdx.x;
-    n[i]->learningRate = &_learningRate;
+    *n[i].learningRate = _learningRate;
 }
 
 __host__ Layer::Layer(int _nNeurons, int _nInputs){
     nNeurons = _nNeurons; // number of neurons in this layer
     nInputs = _nInputs; // number of inputs to each neuron
 
-    neurons = (Neuron**) (malloc(sizeof(Neuron) * nNeurons));
+    neurons = (Neuron*) (malloc(sizeof(Neuron) * nNeurons));
     for (int i=0; i<nNeurons; i++){
-       neurons[i] = new Neuron(nInputs);
+        Neuron* j = new Neuron(nInputs);
+       neurons[i] = *j;
     }
 
     cudaMalloc( (void**) &gpu_neurons, sizeof(Neuron)*nNeurons);
@@ -62,6 +63,7 @@ __host__ void Layer::setlearningRate(double _learningRate){
     learningRate=_learningRate;
     gpu_setLearningRate<<<1,nNeurons>>>(gpu_neurons, learningRate);
     //neurons[0]->setLearningRate(0.1);
+
     cudaDeviceSynchronize();
 }
 
@@ -172,7 +174,7 @@ __host__ void Layer::setlearningRate(double _learningRate){
 //*************************************************************************************
 
 __host__ Neuron* Layer::getNeuron(int _neuronIndex){
-    return (neurons[_neuronIndex]);
+    return (&neurons[_neuronIndex]);
 }
 
 //TODO getGlobalError

@@ -108,8 +108,6 @@ public:
 public:
     int *nInputs;
     double *learningRate;
-
-private:
     int *myLayerIndex;
     int *myNeuronIndex;
     double *initialWeights;
@@ -156,6 +154,8 @@ private:
     double *overallError;
     double *echoError;
     double *echoErrors;
+private:
+
 
 
 };
