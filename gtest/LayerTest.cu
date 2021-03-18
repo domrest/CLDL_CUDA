@@ -21,8 +21,6 @@ TEST(LayerTest, testLayerSetLearningRate) {
     l = new Layer(10, 10);
     l->setlearningRate(0.1);
 
-    cudaDeviceSynchronize();
-
     Neuron *n;
     n = l->getNeuron(0);
     ASSERT_EQ(n->getLearningRate(), 0.1);

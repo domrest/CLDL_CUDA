@@ -63,6 +63,7 @@ public:
      * @param _inputs A pointer to an array of inputs
      */
     void setInputs(const double *_inputs);
+
     /**
      * Sets the inputs to all neurons in the deeper layers (excluding the first hidden layer)
      * @param _index The index of the input

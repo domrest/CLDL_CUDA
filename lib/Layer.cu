@@ -20,8 +20,8 @@
 
 
 __global__ void gpu_setLearningRate(Neuron** n, double _learningRate){
-    //int i = threadIdx.x;
-    *n[0]->learningRate = _learningRate;
+    int i = threadIdx.x;
+    n[i]->learningRate = &_learningRate;
 }
 
 __host__ Layer::Layer(int _nNeurons, int _nInputs){
@@ -60,8 +60,9 @@ __host__ Layer::Layer(int _nNeurons, int _nInputs){
 
 __host__ void Layer::setlearningRate(double _learningRate){
     learningRate=_learningRate;
-    gpu_setLearningRate<<<1,1>>>(gpu_neurons, learningRate);
+    gpu_setLearningRate<<<1,nNeurons>>>(gpu_neurons, learningRate);
     //neurons[0]->setLearningRate(0.1);
+    cudaDeviceSynchronize();
 }
 
 //*************************************************************************************
