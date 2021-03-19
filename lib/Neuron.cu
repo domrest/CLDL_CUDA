@@ -435,28 +435,28 @@ __host__ void gpu_allocateDouble(double** pointer, double value){
 //*************************************************************************************
 //device CUDA kernels:
 //*************************************************************************************
-__device__ void device_doActivation(double* output, double _sum, int* actMet) {
+__device__ void device_doActivation(double* output, double* sum, int* actMet) {
     switch(*actMet){
         case 0:
-            *output = (1/(1+(exp(-_sum)))) - 0.5;
+            *output = (1/(1+(exp(-*sum)))) - 0.5;
             break;
         case 1:
-            *output = tanh(_sum);
+            *output = tanh(*sum);
             break;
         case 2:
-            *output = _sum;
+            *output = *sum;
             break;
     }
 }
 
-__device__ void device_doActivationPrime(double* output, double _input, int* actMet){
+__device__ void device_doActivationPrime(double* output, double* input, int* actMet){
     switch(*actMet){
         case 0:
-            device_doActivation(output, _input, actMet);
+            device_doActivation(output, input, actMet);
             *output = 1 * (0.5 + *output) * (0.5 - *output); //exp(-_input) / pow((exp(-_input) + 1),2);
             break;
         case 1:
-            *output = 1 - pow(tanh(_input), 2.0);
+            *output = 1 - pow(tanh(*input), 2.0);
             break;
         case 2:
             *output = 1;
@@ -493,13 +493,11 @@ __global__ void gpu_setDouble(double* pointer, double value){
     *pointer = value;
 }
 
-__global__ void gpu_doActivation(double* output, double _sum, int* actMet) {
-    double sum = _sum;
+__global__ void gpu_doActivation(double* output, double* sum, int* actMet) {
     device_doActivation(output, sum, actMet);
 }
 
-__global__ void gpu_doActivationPrime(double* output, double _input, int* actMet) {
-    double input = _input;
+__global__ void gpu_doActivationPrime(double* output, double* input, int* actMet) {
     device_doActivationPrime(output, input, actMet);
 }
 

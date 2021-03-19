@@ -175,12 +175,12 @@ __global__ void gpu_setInt(int* pointer, int value);
 __host__ void gpu_allocateDouble(double** pointer, double value);
 __global__ void gpu_setDouble(double* pointer, double value);
 
-__global__ void gpu_doActivation(double *output, double _sum, int *actMet);
-__global__ void gpu_doActivationPrime(double *output, double _input, int *actMet);
+__global__ void gpu_doActivation(double *output, double *_sum, int *actMet);
+__global__ void gpu_doActivationPrime(double *output, double *_input, int *actMet);
 
 
-__device__ void device_doActivation(double* output, double _sum, int* actMet);
+__device__ void device_doActivation(double* output, double *_sum, int* actMet);
 
-__device__ void device_doActivationPrime(double* output, double _sum, int* actMet);
+__device__ void device_doActivationPrime(double* output, double *_sum, int* actMet);
 
 __global__ void gpu_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength);
