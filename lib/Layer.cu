@@ -27,7 +27,7 @@ __global__ void gpu_setLearningRate(Neuron* n, double _learningRate) {
     *n[i].learningRate = _learningRate;
 }
 
-__global__ void gpu_setInputs(Neuron* n, double *list) {
+__global__ void gpu_setInputs(Neuron* n, const double *list) {
     int i = threadIdx.x;
     int j = blockIdx.x * (threadIdx.x * threadIdx.y);
     printf("%d \n", list[i]);
@@ -122,7 +122,9 @@ __host__ void Layer::setForwardError(double _leadForwardError){
 
 //TODO calcForwardError
 
-//TODO getForwardError
+__host__ double Layer::getForwardError(int _neuronIndex){
+    return (neurons[_neuronIndex].getForwardError());
+}
 
 //*************************************************************************************
 //back propagation of error:

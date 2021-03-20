@@ -53,8 +53,5 @@ TEST(LayerTest, testLayerSetForwardError) {
     Layer *l;
     l = new Layer(10, 10);
     l->setForwardError(0.1);
-
-    Neuron *n;
-    n = l->getNeuron(0);
-    ASSERT_EQ(n->getForwardError(), 0.1);
+    ASSERT_EQ(l->getForwardError(0), 0.1);
 }
