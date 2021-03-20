@@ -154,8 +154,8 @@ public:
     double *overallError;
     double *echoError;
     double *echoErrors;
-private:
 
+private:
 
 
 };

@@ -17,12 +17,30 @@
 #include <vector>
 #include <fstream>
 
+#define MAX_BLOCKSIZE 1024
 
 
-__global__ void gpu_setLearningRate(Neuron* n, double _learningRate){
+// GPU FUNCTIONS //
+
+__global__ void gpu_setLearningRate(Neuron* n, double _learningRate) {
     int i = threadIdx.x;
     *n[i].learningRate = _learningRate;
 }
+
+__global__ void gpu_setInputs(Neuron* n, double *list) {
+    int i = threadIdx.x;
+    int j = blockIdx.x * (threadIdx.x * threadIdx.y);
+    printf("%d \n", list[i]);
+    n[0].inputs[i] = list[i];
+}
+
+__global__ void gpu_setForwardError(Neuron*n, double _leadForwardError) {
+    int i = threadIdx.x;
+    *n[i].forwardError = _leadForwardError;
+}
+
+
+// HOST FUNCTIONS //
 
 __host__ Layer::Layer(int _nNeurons, int _nInputs){
     nNeurons = _nNeurons; // number of neurons in this layer
@@ -31,20 +49,20 @@ __host__ Layer::Layer(int _nNeurons, int _nInputs){
     neurons = (Neuron*) (malloc(sizeof(Neuron) * nNeurons));
     for (int i=0; i<nNeurons; i++){
         Neuron* j = new Neuron(nInputs);
-       neurons[i] = *j;
+        neurons[i] = *j;
     }
 
     cudaMalloc( (void**) &gpu_neurons, sizeof(Neuron)*nNeurons);
     cudaMemcpy(gpu_neurons, neurons, sizeof(Neuron)*nNeurons, cudaMemcpyHostToDevice);
 }
 
-/*__host__ Layer::~Layer(){
+__host__ Layer::~Layer(){
     for(int i=0;i<nNeurons;i++) {
-        delete neurons[i];
+        delete &neurons[i];
     }
     free(neurons);
     cudaFree(gpu_neurons);
-}*/
+}
 
 
 //*************************************************************************************
@@ -62,8 +80,6 @@ __host__ Layer::Layer(int _nNeurons, int _nInputs){
 __host__ void Layer::setlearningRate(double _learningRate){
     learningRate=_learningRate;
     gpu_setLearningRate<<<1,nNeurons>>>(gpu_neurons, learningRate);
-    //neurons[0]->setLearningRate(0.1);
-
     cudaDeviceSynchronize();
 }
 
@@ -72,10 +88,16 @@ __host__ void Layer::setlearningRate(double _learningRate){
 //*************************************************************************************
 
 //TODO setInputs
-//__host__ void Layer::setInputs(const double *_inputs) {
-//    inputs = _inputs;
-//    gpu_setInputs<<<1,nNeurons>>>(gpu_neurons, inputs);
-//}
+__host__ void Layer::setInputs(const double *_inputs) {
+    inputs = _inputs;
+    int nThreads = nInputs * nNeurons;          // Total number of CUDA threads required
+    int blockYDim = MAX_BLOCKSIZE/nInputs;      // Size of a block's Y dimension
+    int blockSize = nInputs * blockYDim;        // Size of a block
+    int B = std::ceil(nThreads/blockSize);   // Total number of blocks required
+    dim3 T = dim3(nInputs, blockYDim);          // 2D block dimensions
+    gpu_setInputs<<<B,T>>>(gpu_neurons, inputs);
+    cudaDeviceSynchronize();
+}
 
 //TODO propInputs
 
@@ -85,15 +107,12 @@ __host__ void Layer::setlearningRate(double _learningRate){
 //forward propagation of error:
 //*************************************************************************************
 
-//__host__ void Layer::setForwardError(double _leadForwardError){
-//    /*this is only for the first layer*/
-//    leadForwardError=_leadForwardError;
-//    for (int i=0; i<nNeurons; i++){
-//        neurons[i]->setForwardError(leadForwardError);
-//    }
-//}
-
-//TODO setInputs
+__host__ void Layer::setForwardError(double _leadForwardError){
+    /*this is only for the first layer*/
+    leadForwardError=_leadForwardError;
+    gpu_setForwardError<<<1,nNeurons>>>(gpu_neurons, leadForwardError);
+    cudaDeviceSynchronize();
+}
 
 //__host__ void Layer::propErrorForward(int _index, double _value){
 //    for (int i=0; i<nNeurons; i++){
@@ -177,7 +196,9 @@ __host__ Neuron* Layer::getNeuron(int _neuronIndex){
     return (&neurons[_neuronIndex]);
 }
 
-//TODO getGlobalError
+/*__host__ double Layer::getGlobalError(int _neuronIndex){
+    return (neurons[_neuronIndex].getGlobalError());
+}*/
 
 //TODO getSumOutput
 

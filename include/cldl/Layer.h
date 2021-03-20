@@ -234,7 +234,7 @@ public:
      * @param _neuronIndex The index of the neuron to access
      * @return A pointer to that neuron
      */
-    Neuron *getNeuron(int _neuronIndex);
+    Neuron* getNeuron(int _neuronIndex);
     /**
      * Reports the number of neurons in this layer
      * @return The total number of neurons in this layer
@@ -249,7 +249,7 @@ public:
     /**
      * Allows for accessing the sum output of any specific neuron
      * @param _neuronIndex The index of the neuron to access
-     * @return Returns the wighted sum of the inputs to that neuron
+     * @return Returns the weighted sum of the inputs to that neuron
      */
     double getSumOutput(int _neuronIndex);
     /**
@@ -298,7 +298,7 @@ public:
      */
     void printLayer();
 
-private:
+public:
     // initialisation:
     int nNeurons = 0;
     int nInputs = 0;
@@ -326,7 +326,7 @@ private:
 
     double leadLocalError =0;
 
-    //exploding vasnishing gradient:
+    //exploding vanishing gradient:
     double averageError = 0;
     double maxError = 0;
     double minError = 0;
