@@ -194,3 +194,5 @@ __device__ void device_doActivationPrime(double* output, double _sum, int* actMe
 __global__ void gpu_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength);
 
 __global__ void gpu_echoErrorBackward(double _nextSum, Neuron* n);
+
+__global__ void gpu_multiplication(double value, double* output);

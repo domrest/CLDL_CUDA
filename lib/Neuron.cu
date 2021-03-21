@@ -257,8 +257,6 @@ __host__ void Neuron::setBackwardError(double _leadError){
 }
 
 
-//TODO propErrorBackward make it __device__
-
 __host__ double Neuron::getBackwardError(){
     double _backwardError = 0.0;
     cudaMemcpy(&_backwardError, backwardError, sizeof(double), cudaMemcpyDeviceToHost);
@@ -314,6 +312,7 @@ __host__ double Neuron::getMidError() {
 }
 
 //TODO propMidErrorForward
+
 
 //TODO propMidErrorBackward
 
@@ -525,4 +524,7 @@ __global__ void gpu_dotProduct(double* list1, double* list2, double* _value, dou
     if (idx == 0){
         *_target = _value[0];
     }
+}
+__global__ void gpu_multiplication(double value, double* output){
+    *output = value * *output;
 }

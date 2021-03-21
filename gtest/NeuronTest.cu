@@ -212,6 +212,18 @@ TEST(NeuronTest, testSetAndGetBackwardError){
     ASSERT_EQ(n->getBackwardError(),0.10499358540350662);
 }
 
+TEST(NeuronTest, testGPUMultiplication){
+    double *output;
+    double result = 0;
+    gpu_allocateDouble(&output, 1.0);
+    gpu_multiplication<<<1,1>>>(2.0, output);
+    cudaMemcpy(&result, output, sizeof(double), cudaMemcpyDeviceToHost);
+
+    ASSERT_EQ(result, 2.0);
+
+
+}
+
 TEST(NeuronTest, testEchoErrorBackward){
     Neuron* n = new Neuron(1);
     Neuron* d_n;
