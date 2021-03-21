@@ -222,7 +222,7 @@ TEST(NeuronTest, testSetAndGetBackwardError){
     n = new Neuron(4);
     double leadError = 2.0;
     n->setBackwardError(leadError);
-    ASSERT_EQ(n->getBackwardError(),0.10499358540350662);
+    ASSERT_EQ(n->getBackwardError(),0.5);
 }
 
 TEST(NeuronTest, testGPUMultiplication){
@@ -236,6 +236,7 @@ TEST(NeuronTest, testGPUMultiplication){
 
 
 }
+
 
 TEST(NeuronTest, testEchoErrorBackward){
     Neuron* n = new Neuron(1);

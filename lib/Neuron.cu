@@ -253,7 +253,8 @@ __host__ double Neuron::getForwardError() {
 
 //TODO Fix setBackwardError
 __host__ void Neuron::setBackwardError(double _leadError){
-    gpu_doActivationPrime<<<1,1>>>(backwardError, _leadError, actMet);
+    gpu_doActivationPrime<<<1,1>>>(backwardError, sum, actMet);
+    gpu_multiplication<<<1,1>>>(_leadError,backwardError);
 }
 
 
@@ -270,10 +271,8 @@ __host__ double Neuron::getEchoError() {
 }
 //TODO echoErrorBackward
 __device__ void echoErrorBackward(double _nextSum, Neuron* n) {
-    double output = 0;
-    device_doActivationPrime(&output,*(*n).sum,(*n).actMet);
-    output = _nextSum * output;
-    *(*n).echoError = output;
+    device_doActivationPrime((*n).echoError,(*n).sum,(*n).actMet);
+    *(*n).echoError = *(*n).echoError * _nextSum;
 }
 
 __global__ void gpu_echoErrorBackward(double _nextSum, Neuron* n){
