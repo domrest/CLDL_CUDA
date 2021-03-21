@@ -39,14 +39,16 @@ TEST(LayerTest, testLayerSetInputs) {
     ASSERT_EQ(l->inputs[3], 4.0);
 
     Neuron *n;
-    n = l->getNeuron(0);
-    //ASSERT_EQ(n->getNInputs(), 10);
-    ASSERT_EQ(n->getInput(0), 1.0);
-    //ASSERT_EQ(n->getInput(5), 4.0);
+    n = l->getNeuron(3);
+    ASSERT_EQ(n->getNInputs(), 10);
+    ASSERT_EQ(n->getInput(5), 6.0);
+    ASSERT_EQ(n->getInput(2), 3.0);
 
-    //n = l->getNeuron(5);
-    //ASSERT_EQ(n->getInput(1), 1.0);
-    //ASSERT_EQ(n->getInput(5), 4.0);
+    Neuron *n2;
+    n2 = l->getNeuron(7);
+    ASSERT_EQ(n2->getNInputs(), 10);
+    ASSERT_EQ(n2->getInput(5), 6.0);
+    ASSERT_EQ(n2->getInput(2), 3.0);
 }
 
 TEST(LayerTest, testLayerSetForwardError) {
@@ -54,4 +56,11 @@ TEST(LayerTest, testLayerSetForwardError) {
     l = new Layer(10, 10);
     l->setForwardError(0.1);
     ASSERT_EQ(l->getForwardError(0), 0.1);
+}
+
+TEST(LayerTest, testLayerSetBackwardError) {
+    Layer *l;
+    l = new Layer(10, 10);
+    l->setBackwardError(0.1);
+    ASSERT_EQ(l->getBackwardError(0), 0.1);
 }

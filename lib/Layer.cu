@@ -27,16 +27,22 @@ __global__ void gpu_setLearningRate(Neuron* n, double _learningRate) {
     *n[i].learningRate = _learningRate;
 }
 
-__global__ void gpu_setInputs(Neuron* n, const double *list) {
+__global__ void gpu_setInputs(Neuron* n, double *list) {
     int i = threadIdx.x;
-    int j = blockIdx.x * (threadIdx.x * threadIdx.y);
-    printf("%d \n", list[i]);
-    n[0].inputs[i] = list[i];
+    int j = blockIdx.x;
+    //int j = blockIdx.x * (threadIdx.x * threadIdx.y);
+    n[j].inputs[i] = list[i];
+    printf("%f\n", list[i]);
 }
 
 __global__ void gpu_setForwardError(Neuron*n, double _leadForwardError) {
     int i = threadIdx.x;
     *n[i].forwardError = _leadForwardError;
+}
+
+__global__ void gpu_setBackwardError(Neuron*n, double _leadBackwardError) {
+    int i = threadIdx.x;
+    *n[i].backwardError = _leadBackwardError;
 }
 
 
@@ -52,6 +58,7 @@ __host__ Layer::Layer(int _nNeurons, int _nInputs){
         neurons[i] = *j;
     }
 
+    cudaMalloc( (void**) &gpu_inputs, sizeof(double)*nInputs);
     cudaMalloc( (void**) &gpu_neurons, sizeof(Neuron)*nNeurons);
     cudaMemcpy(gpu_neurons, neurons, sizeof(Neuron)*nNeurons, cudaMemcpyHostToDevice);
 }
@@ -61,6 +68,7 @@ __host__ Layer::~Layer(){
         delete &neurons[i];
     }
     free(neurons);
+    cudaFree(gpu_inputs);
     cudaFree(gpu_neurons);
 }
 
@@ -87,15 +95,16 @@ __host__ void Layer::setlearningRate(double _learningRate){
 //forward propagation of inputs:
 //*************************************************************************************
 
-//TODO setInputs
-__host__ void Layer::setInputs(const double *_inputs) {
+__host__ void Layer::setInputs(double *_inputs) {
     inputs = _inputs;
-    int nThreads = nInputs * nNeurons;          // Total number of CUDA threads required
-    int blockYDim = MAX_BLOCKSIZE/nInputs;      // Size of a block's Y dimension
-    int blockSize = nInputs * blockYDim;        // Size of a block
-    int B = std::ceil(nThreads/blockSize);   // Total number of blocks required
-    dim3 T = dim3(nInputs, blockYDim);          // 2D block dimensions
-    gpu_setInputs<<<B,T>>>(gpu_neurons, inputs);
+    cudaMemcpy(gpu_inputs, inputs, sizeof(double)*nInputs,cudaMemcpyHostToDevice);
+    //int nThreads = nInputs * nNeurons;          // Total number of CUDA threads required
+    //int blockYDim = MAX_BLOCKSIZE/nInputs;      // Size of a block's Y dimension
+    //int blockSize = nInputs * blockYDim;        // Size of a block
+    //int B = std::ceil(nThreads/blockSize);   // Total number of blocks required
+    //dim3 T = dim3(nInputs, blockYDim);          // 2D block dimensions
+    gpu_setInputs<<<nNeurons,nInputs>>>(gpu_neurons, gpu_inputs);
+    //std::cout<<B<<endl;
     cudaDeviceSynchronize();
 }
 
@@ -130,31 +139,17 @@ __host__ double Layer::getForwardError(int _neuronIndex){
 //back propagation of error:
 //*************************************************************************************
 
-//TODO setBackwardError
+__host__ void Layer::setBackwardError(double _leadBackwardError) {
+    leadBackwardError = _leadBackwardError;
+    gpu_setBackwardError<<<1,nNeurons>>>(gpu_neurons, leadBackwardError);
+    cudaDeviceSynchronize();
+}
 
 //TODO propErrorBackward
 
-//TODO getBackwardError
-
-//*************************************************************************************
-//mid propagation of error:
-//*************************************************************************************
-
-//TODO setMidError
-
-//TODO calcMidError
-
-//TODO getMidError
-
-//TODO propMidErrorForward
-
-//TODO propMidErrorBackward
-
-//*************************************************************************************
-//exploding/vanishing gradient:
-//*************************************************************************************
-
-//TODO getGradient
+__host__ double Layer::getBackwardError(int _neuronIndex){
+    return (neurons[_neuronIndex].getBackwardError());
+}
 
 //*************************************************************************************
 //learning:
@@ -163,32 +158,6 @@ __host__ double Layer::getForwardError(int _neuronIndex){
 //TODO setErrorCoeff
 
 //TODO updateWeights
-
-//*************************************************************************************
-//global settings
-//*************************************************************************************
-
-//TODO setGlobalError
-
-//TODO setEchoError
-
-//TODO getEchoError
-
-//TODO echoErrorBackward
-
-//TODO echoErrorForward
-
-//TODO calcEchoError
-
-//*************************************************************************************
-//local backpropagation of error
-//*************************************************************************************
-
-//TODO setLocalError
-
-//TODO propGlobalErrorBackwardLocally
-
-//TODO getLocalError
 
 //*************************************************************************************
 //getters:

@@ -62,7 +62,7 @@ public:
      * Sets the inputs to all neurons in the first hidden layer only
      * @param _inputs A pointer to an array of inputs
      */
-    void setInputs(const double *_inputs);
+    void setInputs(double *_inputs);
 
     /**
      * Sets the inputs to all neurons in the deeper layers (excluding the first hidden layer)
@@ -310,7 +310,8 @@ public:
     int layerHasReported = 0;
 
     //forward propagation of inputs:
-    const double *inputs = 0;
+    double *inputs;
+    double *gpu_inputs;
 
     //forward propagation of error:
     double leadForwardError = 0;
