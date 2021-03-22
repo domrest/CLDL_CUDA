@@ -73,7 +73,6 @@ public:
     __host__ double getInput(int index);
 
     __host__ void setLearningRate(double _learningRate);
-
     __host__ double getLearningRate();
     __host__ int getNInputs();
 
@@ -103,6 +102,14 @@ public:
     __host__ double getInputMidErrors(int index);
     __host__ void calcMidError();
     __host__ double getMidError();
+
+    // Getters
+    __host__ double getOutput();
+    __host__ double getSumOutput();
+    __host__ double getMaxWeight();
+    __host__ double getMinWeight();
+    __host__ double getSumWeight();
+    __host__ double getWeightChange();
 
 // initialisation:
 public:
@@ -171,12 +178,12 @@ __global__ void gpu_setInt(int* pointer, int value);
 __host__ void gpu_allocateDouble(double** pointer, double value);
 __global__ void gpu_setDouble(double* pointer, double value);
 
-__global__ void gpu_doActivation(double *output, double _sum, int *actMet);
-__global__ void gpu_doActivationPrime(double *output, double _input, int *actMet);
+__global__ void gpu_doActivation(double *output, double *_sum, int *actMet);
+__global__ void gpu_doActivationPrime(double *output, double *_input, int *actMet);
 
 
-__device__ void device_doActivation(double* output, double _sum, int* actMet);
+__device__ void device_doActivation(double* output, double *_sum, int* actMet);
 
-__device__ void device_doActivationPrime(double* output, double _sum, int* actMet);
+__device__ void device_doActivationPrime(double* output, double *_sum, int* actMet);
 
 __global__ void gpu_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength);

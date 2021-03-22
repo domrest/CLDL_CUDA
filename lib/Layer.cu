@@ -84,6 +84,8 @@ __host__ Layer::~Layer(){
 //}
 
 
+
+
 __host__ void Layer::setlearningRate(double _learningRate){
     learningRate=_learningRate;
     gpu_setLearningRate<<<1,nNeurons>>>(gpu_neurons, learningRate);
