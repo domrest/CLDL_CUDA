@@ -8,7 +8,7 @@ __global__ void checkNInputs(Neuron* n){
     *n[i].nInputs = 2;
 }
 
-TEST(CUDATest, testObjectPointerCalls){
+TEST(CUDATest, testObjectPointerCallsList){
     Neuron* n;
     n = (Neuron*) (malloc(sizeof(Neuron) * 5));
     for (int i=0; i<5; i++){
