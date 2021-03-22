@@ -85,7 +85,7 @@ public:
      * @param _value value of the error
      */
     __host__ void propErrorForward(int _index, double _value);
-    __host__ double Neuron::doActivation(double _sum);
+    __host__ double doActivation(double _sum);
 
     __host__ void calcForwardError();
     __host__ double getForwardError();
@@ -103,7 +103,6 @@ public:
     __host__ void calcMidError();
     __host__ double getMidError();
 
-
     // Getters
     __host__ double getOutput();
     __host__ double getSumOutput();
@@ -113,11 +112,13 @@ public:
     __host__ double getWeightChange();
 
 // initialisation:
+public:
     int *nInputs;
+    double *learningRate;
     int *myLayerIndex;
     int *myNeuronIndex;
     double *initialWeights;
-    double *learningRate;
+
 
     int *iHaveReported;
 
@@ -160,6 +161,8 @@ public:
     double *overallError;
     double *echoError;
     double *echoErrors;
+
+private:
 
 
 };

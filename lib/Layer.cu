@@ -17,30 +17,58 @@
 #include <vector>
 #include <fstream>
 
-// TODO private variables
+#define MAX_BLOCKSIZE 1024
 
+
+// GPU FUNCTIONS //
+
+__global__ void gpu_setLearningRate(Neuron* n, double _learningRate) {
+    int i = threadIdx.x;
+    *n[i].learningRate = _learningRate;
+}
+
+__global__ void gpu_setInputs(Neuron* n, double *list, int nNeurons) {
+    int i = threadIdx.x; // Input index
+    int j = (blockIdx.x*blockDim.y) + threadIdx.y; // Neuron index
+    if(j < nNeurons)
+        n[j].inputs[i] = list[i];
+}
+
+__global__ void gpu_setForwardError(Neuron*n, double _leadForwardError) {
+    int i = threadIdx.x;
+    *n[i].forwardError = _leadForwardError;
+}
+
+__global__ void gpu_setBackwardError(Neuron*n, double _leadBackwardError) {
+    int i = threadIdx.x;
+    *n[i].backwardError = _leadBackwardError;
+}
+
+
+// HOST FUNCTIONS //
 
 __host__ Layer::Layer(int _nNeurons, int _nInputs){
     nNeurons = _nNeurons; // number of neurons in this layer
     nInputs = _nInputs; // number of inputs to each neuron
-    neurons = new Neuron*[nNeurons];
-    /* dynamic allocation of memory to n number of
-     * neuron-pointers and returning a pointer, "neurons",
-     * to the first element */
-    for (int i=0;i<nNeurons;i++){
-        neurons[i]=new Neuron(nInputs);
+
+    neurons = (Neuron*) (malloc(sizeof(Neuron) * nNeurons));
+    for (int i=0; i<nNeurons; i++){
+        Neuron* j = new Neuron(nInputs);
+        neurons[i] = *j;
     }
-    /* each element of "neurons" pointer is itself a pointer
-     * to a neuron object with specific no. of inputs */
+
+    cudaMalloc( (void**) &gpu_inputs, sizeof(double)*nInputs);
+    cudaMalloc( (void**) &gpu_neurons, sizeof(Neuron)*nNeurons);
+    cudaMemcpy(gpu_neurons, neurons, sizeof(Neuron)*nNeurons, cudaMemcpyHostToDevice);
 }
 
 __host__ Layer::~Layer(){
     for(int i=0;i<nNeurons;i++) {
-        delete neurons[i];
+        delete &neurons[i];
     }
-    delete[] neurons;
-    /* it is important to delete any dynamic
-     * memory allocation created by "new" */
+    free(neurons);
+    cudaFree(gpu_inputs);
+    cudaFree(gpu_neurons);
 }
 
 
@@ -48,28 +76,39 @@ __host__ Layer::~Layer(){
 //initialisation:
 //*************************************************************************************
 
-__host__ void Layer::initLayer(int _layerIndex, Neuron::weightInitMethod _wim, Neuron::biasInitMethod _bim, Neuron::actMethod _am){
-    myLayerIndex = _layerIndex;
-    for (int i=0; i<nNeurons; i++){
-        neurons[i]->initNeuron(i, myLayerIndex, _wim, _bim, _am);
-    }
-}
+//__host__ void Layer::initLayer(int _layerIndex, Neuron::weightInitMethod _wim, Neuron::biasInitMethod _bim, Neuron::actMethod _am){
+//    myLayerIndex = _layerIndex;
+//    for (int i=0; i<nNeurons; i++){
+//        neurons[i]->initNeuron(i, myLayerIndex, _wim, _bim, _am);
+//    }
+//}
 
 
 
 
 __host__ void Layer::setlearningRate(double _learningRate){
     learningRate=_learningRate;
-    for (int i=0; i<nNeurons; i++){
-        neurons[i]->setLearningRate(learningRate);
-    }
+    gpu_setLearningRate<<<1,nNeurons>>>(gpu_neurons, learningRate);
+    cudaDeviceSynchronize();
 }
 
 //*************************************************************************************
 //forward propagation of inputs:
 //*************************************************************************************
 
-//TODO setInputs
+__host__ void Layer::setInputs(double *_inputs) {
+    inputs = _inputs;
+    cudaMemcpy(gpu_inputs, inputs, sizeof(double)*nInputs,cudaMemcpyHostToDevice);
+
+    int nThreads = nInputs * nNeurons;          // Total number of CUDA threads required
+    int blockYDim = MAX_BLOCKSIZE/nInputs;      // Size of a block's Y dimension
+    int blockSize = nInputs * blockYDim;        // Size of required block
+    int B = std::ceil(float(nThreads)/blockSize);   // Total number of blocks required
+    dim3 T = dim3(nInputs, blockYDim);          // 2D block dimensions
+    gpu_setInputs<<<B,T>>>(gpu_neurons, gpu_inputs, nNeurons);
+
+    cudaDeviceSynchronize();
+}
 
 //TODO propInputs
 
@@ -79,70 +118,40 @@ __host__ void Layer::setlearningRate(double _learningRate){
 //forward propagation of error:
 //*************************************************************************************
 
-//__host__ void Layer::setForwardError(double _leadForwardError) {
-//    double** pointerList = new double*[nNeurons];
-//    int* nInputList = new int[nNeurons];
-//
-//    for (int i=0; i<nNeurons; i++){
-//        pointerList[i] = neurons[i]->getInputErrorPointer();
-//        nInputList[i] = neurons[1]->getNInputs();
-//    }
-//
-//}
-
-//__global__ void gpu_setForwardError(double _leadForwardError, double** pointerList, int* nInputList) {
-//
-//}
-//
-//__host__ void Layer::setForwardError(double _leadForwardError){
-//    /*this is only for the first layer*/
-//    leadForwardError=_leadForwardError;
-//    for (int i=0; i<nNeurons; i++){
-//        neurons[i]->setForwardError(leadForwardError);
-//    }
-//}
-
-//TODO setInputs
-
-__host__ void Layer::propErrorForward(int _index, double _value){
-    for (int i=0; i<nNeurons; i++){
-        neurons[i]->propErrorForward(_index, _value);
-    }
+__host__ void Layer::setForwardError(double _leadForwardError){
+    /*this is only for the first layer*/
+    leadForwardError=_leadForwardError;
+    gpu_setForwardError<<<1,nNeurons>>>(gpu_neurons, leadForwardError);
+    cudaDeviceSynchronize();
 }
+
+//__host__ void Layer::propErrorForward(int _index, double _value){
+//    for (int i=0; i<nNeurons; i++){
+//        neurons[i]->propErrorForward(_index, _value);
+//    }
+//}
 
 //TODO calcForwardError
 
-//TODO getForwardError
+__host__ double Layer::getForwardError(int _neuronIndex){
+    return (neurons[_neuronIndex].getForwardError());
+}
 
 //*************************************************************************************
 //back propagation of error:
 //*************************************************************************************
 
-//TODO setBackwardError
+__host__ void Layer::setBackwardError(double _leadBackwardError) {
+    leadBackwardError = _leadBackwardError;
+    gpu_setBackwardError<<<1,nNeurons>>>(gpu_neurons, leadBackwardError);
+    cudaDeviceSynchronize();
+}
 
 //TODO propErrorBackward
 
-//TODO getBackwardError
-
-//*************************************************************************************
-//mid propagation of error:
-//*************************************************************************************
-
-//TODO setMidError
-
-//TODO calcMidError
-
-//TODO getMidError
-
-//TODO propMidErrorForward
-
-//TODO propMidErrorBackward
-
-//*************************************************************************************
-//exploding/vanishing gradient:
-//*************************************************************************************
-
-//TODO getGradient
+__host__ double Layer::getBackwardError(int _neuronIndex){
+    return (neurons[_neuronIndex].getBackwardError());
+}
 
 //*************************************************************************************
 //learning:
@@ -153,41 +162,16 @@ __host__ void Layer::propErrorForward(int _index, double _value){
 //TODO updateWeights
 
 //*************************************************************************************
-//global settings
-//*************************************************************************************
-
-//TODO setGlobalError
-
-//TODO setEchoError
-
-//TODO getEchoError
-
-//TODO echoErrorBackward
-
-//TODO echoErrorForward
-
-//TODO calcEchoError
-
-//*************************************************************************************
-//local backpropagation of error
-//*************************************************************************************
-
-//TODO setLocalError
-
-//TODO propGlobalErrorBackwardLocally
-
-//TODO getLocalError
-
-//*************************************************************************************
 //getters:
 //*************************************************************************************
 
 __host__ Neuron* Layer::getNeuron(int _neuronIndex){
-    assert(_neuronIndex < nNeurons);
-    return (neurons[_neuronIndex]);
+    return (&neurons[_neuronIndex]);
 }
 
-//TODO getGlobalError
+/*__host__ double Layer::getGlobalError(int _neuronIndex){
+    return (neurons[_neuronIndex].getGlobalError());
+}*/
 
 //TODO getSumOutput
 

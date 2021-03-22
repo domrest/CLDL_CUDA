@@ -62,7 +62,8 @@ public:
      * Sets the inputs to all neurons in the first hidden layer only
      * @param _inputs A pointer to an array of inputs
      */
-    void setInputs(const double *_inputs);
+    void setInputs(double *_inputs);
+
     /**
      * Sets the inputs to all neurons in the deeper layers (excluding the first hidden layer)
      * @param _index The index of the input
@@ -233,7 +234,7 @@ public:
      * @param _neuronIndex The index of the neuron to access
      * @return A pointer to that neuron
      */
-    Neuron *getNeuron(int _neuronIndex);
+    Neuron* getNeuron(int _neuronIndex);
     /**
      * Reports the number of neurons in this layer
      * @return The total number of neurons in this layer
@@ -248,7 +249,7 @@ public:
     /**
      * Allows for accessing the sum output of any specific neuron
      * @param _neuronIndex The index of the neuron to access
-     * @return Returns the wighted sum of the inputs to that neuron
+     * @return Returns the weighted sum of the inputs to that neuron
      */
     double getSumOutput(int _neuronIndex);
     /**
@@ -297,18 +298,20 @@ public:
      */
     void printLayer();
 
-private:
+public:
     // initialisation:
     int nNeurons = 0;
     int nInputs = 0;
     double learningRate = 0;
     int myLayerIndex = 0;
-    Neuron **neurons = 0;
+    Neuron *neurons;
+    Neuron *gpu_neurons;
     
     int layerHasReported = 0;
 
     //forward propagation of inputs:
-    const double *inputs = 0;
+    double *inputs;
+    double *gpu_inputs;
 
     //forward propagation of error:
     double leadForwardError = 0;
@@ -324,7 +327,7 @@ private:
 
     double leadLocalError =0;
 
-    //exploding vasnishing gradient:
+    //exploding vanishing gradient:
     double averageError = 0;
     double maxError = 0;
     double minError = 0;
