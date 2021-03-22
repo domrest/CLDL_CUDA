@@ -32,7 +32,7 @@ TEST(LayerTest, testLayerSetLearningRate) {
 
 TEST(LayerTest, testLayerSetInputs) {
     Layer *l;
-    l = new Layer(10, 10);
+    l = new Layer(10000, 10);
 
     double in[10] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
     l->setInputs(in);
@@ -45,7 +45,7 @@ TEST(LayerTest, testLayerSetInputs) {
     ASSERT_EQ(n->getInput(2), 3.0);
 
     Neuron *n2;
-    n2 = l->getNeuron(7);
+    n2 = l->getNeuron(9999);
     ASSERT_EQ(n2->getNInputs(), 10);
     ASSERT_EQ(n2->getInput(5), 6.0);
     ASSERT_EQ(n2->getInput(2), 3.0);

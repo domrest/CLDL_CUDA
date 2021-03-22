@@ -27,12 +27,11 @@ __global__ void gpu_setLearningRate(Neuron* n, double _learningRate) {
     *n[i].learningRate = _learningRate;
 }
 
-__global__ void gpu_setInputs(Neuron* n, double *list) {
-    int i = threadIdx.x;
-    int j = blockIdx.x;
-    //int j = blockIdx.x * (threadIdx.x * threadIdx.y);
-    n[j].inputs[i] = list[i];
-    printf("%f\n", list[i]);
+__global__ void gpu_setInputs(Neuron* n, double *list, int nNeurons) {
+    int i = threadIdx.x; // Input index
+    int j = (blockIdx.x*blockDim.y) + threadIdx.y; // Neuron index
+    if(j < nNeurons)
+        n[j].inputs[i] = list[i];
 }
 
 __global__ void gpu_setForwardError(Neuron*n, double _leadForwardError) {
@@ -98,13 +97,14 @@ __host__ void Layer::setlearningRate(double _learningRate){
 __host__ void Layer::setInputs(double *_inputs) {
     inputs = _inputs;
     cudaMemcpy(gpu_inputs, inputs, sizeof(double)*nInputs,cudaMemcpyHostToDevice);
-    //int nThreads = nInputs * nNeurons;          // Total number of CUDA threads required
-    //int blockYDim = MAX_BLOCKSIZE/nInputs;      // Size of a block's Y dimension
-    //int blockSize = nInputs * blockYDim;        // Size of a block
-    //int B = std::ceil(nThreads/blockSize);   // Total number of blocks required
-    //dim3 T = dim3(nInputs, blockYDim);          // 2D block dimensions
-    gpu_setInputs<<<nNeurons,nInputs>>>(gpu_neurons, gpu_inputs);
-    //std::cout<<B<<endl;
+
+    int nThreads = nInputs * nNeurons;          // Total number of CUDA threads required
+    int blockYDim = MAX_BLOCKSIZE/nInputs;      // Size of a block's Y dimension
+    int blockSize = nInputs * blockYDim;        // Size of required block
+    int B = std::ceil(float(nThreads)/blockSize);   // Total number of blocks required
+    dim3 T = dim3(nInputs, blockYDim);          // 2D block dimensions
+    gpu_setInputs<<<B,T>>>(gpu_neurons, gpu_inputs, nNeurons);
+
     cudaDeviceSynchronize();
 }
 
