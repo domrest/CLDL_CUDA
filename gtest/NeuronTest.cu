@@ -31,7 +31,7 @@ TEST(NeuronTest, testSetLearningRate){
     ASSERT_EQ(n->getLearningRate(), 2.0);
 }
 
-TEST(Neuron, testSetInputs){
+TEST(NeuronTest, testSetInputs){
     Neuron *n;
     n = new Neuron(3);
     n->setInput(0,2.0);
@@ -91,48 +91,62 @@ TEST(NeuronTest, testSumAndMaxMin){
 }
 
 TEST(NeuronTest, TestDoActivation){
-    double *d_result;
+    double *d_result, *d_sum;
     double result = 0;
     int *actMet;
+
     gpu_allocateDouble(&d_result, 0.0);
+    gpu_allocateDouble(&d_sum, 2.0);
     gpu_allocateInt(&actMet, 1);
-    gpu_doActivation<<<1,1>>>(d_result, 2, actMet);
+
+    gpu_doActivation<<<1,1>>>(d_result, d_sum, actMet);
     cudaMemcpy(&result, d_result, sizeof(double), cudaMemcpyDeviceToHost);
     ASSERT_DOUBLE_EQ(result, 0.9640275800758169);
 
     gpu_setDouble<<<1,1>>>(d_result, 0.0);
+    gpu_setDouble<<<1,1>>>(d_sum, 2.0);
     gpu_setInt<<<1,1>>>(actMet, 2);
-    gpu_doActivation<<<1,1>>>(d_result, 2, actMet);
+
+    gpu_doActivation<<<1,1>>>(d_result, d_sum, actMet);
     cudaMemcpy(&result, d_result, sizeof(double), cudaMemcpyDeviceToHost);
     ASSERT_DOUBLE_EQ(result, 2.0);
 
     gpu_setDouble<<<1,1>>>(d_result, 0.0);
+    gpu_setDouble<<<1,1>>>(d_sum, 2.0);
     gpu_setInt<<<1,1>>>(actMet, 0);
-    gpu_doActivation<<<1,1>>>(d_result, 2, actMet);
+
+    gpu_doActivation<<<1,1>>>(d_result, d_sum, actMet);
     cudaMemcpy(&result, d_result, sizeof(double), cudaMemcpyDeviceToHost);
     ASSERT_DOUBLE_EQ(result, 0.38079707797788231);
 
 }
 
 TEST(NeuronTest, TestDoActivationPrime){
-    double *d_result;
+    double *d_result, *d_sum;
     double result = 0;
     int *actMet;
+
     gpu_allocateDouble(&d_result, 0.0);
     gpu_allocateInt(&actMet, 0);
-    gpu_doActivationPrime<<<1,1>>>(d_result, 2, actMet);
+    gpu_allocateDouble(&d_sum, 2.0);
+
+    gpu_doActivationPrime<<<1,1>>>(d_result, d_sum, actMet);
     cudaMemcpy(&result, d_result, sizeof(double), cudaMemcpyDeviceToHost);
     ASSERT_DOUBLE_EQ(result, 0.10499358540350662);
 
     gpu_setDouble<<<1,1>>>(d_result, 0.0);
+    gpu_setDouble<<<1,1>>>(d_sum, 2.0);
     gpu_setInt<<<1,1>>>(actMet, 1);
-    gpu_doActivationPrime<<<1,1>>>(d_result, 2, actMet);
+
+    gpu_doActivationPrime<<<1,1>>>(d_result, d_sum, actMet);
     cudaMemcpy(&result, d_result, sizeof(double), cudaMemcpyDeviceToHost);
     ASSERT_DOUBLE_EQ(result, 0.070650824853164429);
 
     gpu_setDouble<<<1,1>>>(d_result, 0.0);
+    gpu_setDouble<<<1,1>>>(d_sum, 2.0);
     gpu_setInt<<<1,1>>>(actMet, 2);
-    gpu_doActivationPrime<<<1,1>>>(d_result, 2, actMet);
+
+    gpu_doActivationPrime<<<1,1>>>(d_result, d_sum, actMet);
     cudaMemcpy(&result, d_result, sizeof(double), cudaMemcpyDeviceToHost);
     ASSERT_DOUBLE_EQ(result, 1.0);
 

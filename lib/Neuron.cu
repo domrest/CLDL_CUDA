@@ -240,7 +240,6 @@ __host__ void Neuron::propErrorForward(int _index, double _value){
     //TODO assert forwardError isFinite
 //}
 
-//TODO getForwardError
 __host__ double Neuron::getForwardError() {
     double _forwardError = 0.0;
     cudaMemcpy(&_forwardError, forwardError, sizeof(double), cudaMemcpyDeviceToHost);
@@ -265,14 +264,12 @@ __host__ double Neuron::getForwardError() {
 //    gpu_setDouble<<<1,1>>>(backwardError,_leadError*doActivationPrime(sum));
 //}
 
-//TODO getBackwardError
 __host__ double Neuron::getBackwardError(){
     double _backwardError = 0.0;
     cudaMemcpy(&_backwardError, backwardError, sizeof(double), cudaMemcpyDeviceToHost);
     return _backwardError;
 }
 
-//TODO getEchoError
 __host__ double Neuron::getEchoError() {
     double _echoError = 0.0;
     cudaMemcpy(&_echoError, echoError, sizeof(double), cudaMemcpyDeviceToHost);
@@ -288,7 +285,6 @@ __host__ double Neuron::getEchoError() {
 //MID propagation of error
 //*************************************************************************************
 
-//TODO setMidError
 __host__ void Neuron::setMidError(double _leadMidError) {
     gpu_setValuesInArray<<<1, getNInputs()>>>(_leadMidError, inputMidErrors);
 }
@@ -301,7 +297,7 @@ __host__ double Neuron::getInputMidErrors(int index) {
     cudaMemcpy(&_inputMidError, inputMidError, sizeof(double), cudaMemcpyDeviceToHost);
     return _inputMidError;
 }
-//TODO calcMidError
+
 __host__ void Neuron::calcMidError() {
     double* _value;
     cudaMalloc((void**)&_value, sizeof(double)*getNInputs());
@@ -310,7 +306,6 @@ __host__ void Neuron::calcMidError() {
 }
 
 
-//TODO getMidError
 __host__ double Neuron::getMidError() {
     double _midError = 0.0;
     cudaMemcpy(&_midError, backwardError, sizeof(double), cudaMemcpyDeviceToHost);
@@ -334,12 +329,6 @@ __host__ double Neuron::getMidError() {
 //TODO setErrorCoeff
 
 //TODO updateWeights
-
-//TODO doActivation
-
-
-
-//TODO doActivationPrime
 
 //*************************************************************************************
 //global settings
@@ -369,17 +358,46 @@ __host__ double Neuron::getMidError() {
 // getters:
 //*************************************************************************************
 
-//TODO getOutput
+__host__ double Neuron::getOutput(){
+    double _output=0;
+    cudaMemcpy(&_output, output, sizeof(double), cudaMemcpyDeviceToHost);
+    return _output;
+}
 
-//TODO getSumOutput
+__host__ double Neuron::getSumOutput(){
+    double _sum=0;
+    cudaMemcpy(&_sum, sum, sizeof(double), cudaMemcpyDeviceToHost);
+    return _sum;
+}
 
-//TODO getMaxWeight
+__host__ double Neuron::getMaxWeight(){
+    double _maxWeight=0;
+    cudaMemcpy(&_maxWeight, maxWeight, sizeof(double), cudaMemcpyDeviceToHost);
+    return _maxWeight;
+}
 
-//TODO getMinWeight
+__host__ double Neuron::getMinWeight(){
+    double _minWeight=0;
+    cudaMemcpy(&_minWeight, minWeight, sizeof(double), cudaMemcpyDeviceToHost);
+    return _minWeight;
+}
 
-//TODO getSumWeight
+__host__ double Neuron::getSumWeight(){
+    double _weightSum=0;
+    cudaMemcpy(&_weightSum, weightSum, sizeof(double), cudaMemcpyDeviceToHost);
+    return _weightSum;
+}
 
-//TODO getWeightChange
+
+//double Neuron::getWeightChange(){
+//    weightsDifference = 0;
+//    weightChange = 0;
+//    for (int i=0; i<nInputs; i++){
+//        weightsDifference = weights[i] - initialWeights[i];
+//        weightChange += pow(weightsDifference,2);
+//    }
+//    return (weightChange);
+//}
 
 //TODO getWeightDistance
 
@@ -388,8 +406,6 @@ __host__ int Neuron::getNInputs(){
     cudaMemcpy(&_nInputs, nInputs, sizeof(int), cudaMemcpyDeviceToHost);
     return _nInputs;
 }
-
-
 
 
 //TODO getWeights
@@ -419,28 +435,28 @@ __host__ void gpu_allocateDouble(double** pointer, double value){
 //*************************************************************************************
 //device CUDA kernels:
 //*************************************************************************************
-__device__ void device_doActivation(double* output, double _sum, int* actMet) {
+__device__ void device_doActivation(double* output, double* sum, int* actMet) {
     switch(*actMet){
         case 0:
-            *output = (1/(1+(exp(-_sum)))) - 0.5;
+            *output = (1/(1+(exp(-*sum)))) - 0.5;
             break;
         case 1:
-            *output = tanh(_sum);
+            *output = tanh(*sum);
             break;
         case 2:
-            *output = _sum;
+            *output = *sum;
             break;
     }
 }
 
-__device__ void device_doActivationPrime(double* output, double _input, int* actMet){
+__device__ void device_doActivationPrime(double* output, double* input, int* actMet){
     switch(*actMet){
         case 0:
-            device_doActivation(output, _input, actMet);
+            device_doActivation(output, input, actMet);
             *output = 1 * (0.5 + *output) * (0.5 - *output); //exp(-_input) / pow((exp(-_input) + 1),2);
             break;
         case 1:
-            *output = 1 - pow(tanh(_input), 2.0);
+            *output = 1 - pow(tanh(*input), 2.0);
             break;
         case 2:
             *output = 1;
@@ -477,17 +493,13 @@ __global__ void gpu_setDouble(double* pointer, double value){
     *pointer = value;
 }
 
-__global__ void gpu_doActivation(double* output, double _sum, int* actMet) {
-    double sum = _sum;
+__global__ void gpu_doActivation(double* output, double* sum, int* actMet) {
     device_doActivation(output, sum, actMet);
 }
 
-__global__ void gpu_doActivationPrime(double* output, double _input, int* actMet) {
-    double input = _input;
+__global__ void gpu_doActivationPrime(double* output, double* input, int* actMet) {
     device_doActivationPrime(output, input, actMet);
 }
-
-
 
 __global__ void gpu_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength){
     int idx = threadIdx.x;
