@@ -296,21 +296,26 @@ __host__ double Neuron::getInputMidErrors(int index) {
     return _inputMidError;
 }
 
+//TODO find how to do midError = midError * doActivationPrime(sum)
 __host__ void Neuron::calcMidError() {
     double* _value;
     cudaMalloc((void**)&_value, sizeof(double)*getNInputs());
     gpu_dotProduct<<<1, getNInputs()>>>(inputMidErrors, weights, _value, midError, getNInputs());
-    // TODO midError with doActivationPrime
+    double output = getMidError();
+    gpu_doActivationPrime<<<1,1>>>(midError, sum, actMet);
+    gpu_multiplication<<<1, 1>>>(output, midError);
+
 }
 
 
 __host__ double Neuron::getMidError() {
     double _midError = 0.0;
-    cudaMemcpy(&_midError, backwardError, sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&_midError, midError, sizeof(double), cudaMemcpyDeviceToHost);
     return _midError;
 }
 
 //TODO propMidErrorForward
+
 
 
 //TODO propMidErrorBackward
@@ -462,6 +467,7 @@ __device__ void device_doActivationPrime(double* output, double* input, int* act
             break;
     }
 }
+
 
 //*************************************************************************************
 //global CUDA kernels:
