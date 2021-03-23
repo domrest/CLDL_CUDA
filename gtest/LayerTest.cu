@@ -73,6 +73,30 @@ TEST(LayerTest, testLayerSetInputs) {
     ASSERT_EQ(n2->getInput(2), 3.0);
 }
 
+TEST(LayerTest, testLayerPropInputs) {
+    Layer *l;
+    l = new Layer(200, 10);
+
+    double prevLayerOuts[10] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
+    double* gpu_InputOutputs;
+    cudaMalloc( (void**) &gpu_InputOutputs, sizeof(double)*10);
+    cudaMemcpy(gpu_InputOutputs, prevLayerOuts, sizeof(double)*10,cudaMemcpyHostToDevice);
+
+    l->propInputs(gpu_InputOutputs);
+    //ASSERT_EQ(l->inputs[3], 4.0);
+    Neuron *n;
+    n = l->getNeuron(3);
+    ASSERT_EQ(n->getNInputs(), 10);
+    ASSERT_EQ(n->getInput(5), 6.0);
+    ASSERT_EQ(n->getInput(2), 3.0);
+
+    Neuron *n2;
+    n2 = l->getNeuron(150);
+    ASSERT_EQ(n2->getNInputs(), 10);
+    ASSERT_EQ(n2->getInput(5), 6.0);
+    ASSERT_EQ(n2->getInput(2), 3.0);
+}
+
 TEST(LayerTest, testLayerSetForwardError) {
     Layer *l;
     l = new Layer(10, 10);

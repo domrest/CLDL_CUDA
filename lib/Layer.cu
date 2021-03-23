@@ -110,7 +110,16 @@ __host__ void Layer::setInputs(double *_inputs) {
     cudaDeviceSynchronize();
 }
 
-//TODO propInputs
+__host__ void Layer::propInputs(double *_gpu_InputOutputs) {
+    int nThreads = nInputs * nNeurons;          // Total number of CUDA threads required
+    int blockYDim = MAX_BLOCKSIZE/nInputs;      // Size of a block's Y dimension
+    int blockSize = nInputs * blockYDim;        // Size of required block
+    int B = std::ceil(float(nThreads)/blockSize);   // Total number of blocks required
+    dim3 T = dim3(nInputs, blockYDim);          // 2D block dimensions
+    gpu_setInputs<<<B,T>>>(gpu_neurons, _gpu_InputOutputs, nNeurons);
+}
+
+
 
 //TODO calcOutputs
 

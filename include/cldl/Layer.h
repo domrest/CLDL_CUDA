@@ -69,7 +69,7 @@ public:
      * @param _index The index of the input
      * @param _value The value of the input
      */
-    void propInputs(int _index, double _value);
+    void propInputs(double *_gpu_InputOutputs);
     /**
      * Demands that all neurons in this layer calculate their output
      */
