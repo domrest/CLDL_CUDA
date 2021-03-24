@@ -257,6 +257,14 @@ __host__ void Neuron::setBackwardError(double _leadError){
     gpu_multiplication<<<1,1>>>(_leadError,backwardError);
 }
 
+__device__ void propErrorBackward(double _nextSum, Neuron* n){
+    device_doActivationPrime((*n).backwardError, (*n).sum, (*n).actMet);
+    *(*n).backwardError = *(*n).backwardError * _nextSum;
+}
+__global__ void gpu_propErrorBackward(double _nextSum, Neuron* n){
+    double nextSum = _nextSum;
+    propErrorBackward(nextSum, n);
+}
 
 __host__ double Neuron::getBackwardError(){
     double _backwardError = 0.0;

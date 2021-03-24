@@ -251,6 +251,20 @@ TEST(NeuronTest, testEchoErrorBackward){
     ASSERT_EQ(n->getEchoError(),0.5);
 
 }
+
+TEST(NeuronTest, testPropErrorBackward){
+    Neuron* n = new Neuron(1);
+    Neuron* d_n;
+
+    cudaMalloc((void**) &d_n, sizeof(Neuron));
+
+    cudaMemcpy(d_n, n, sizeof(Neuron), cudaMemcpyHostToDevice);
+
+    gpu_propErrorBackward<<<1,1>>>(2.0, d_n);
+
+    ASSERT_EQ(n->getBackwardError(),0.5);
+
+}
 int main(int argc, char** argv){
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
