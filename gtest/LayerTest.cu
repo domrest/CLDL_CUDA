@@ -110,3 +110,7 @@ TEST(LayerTest, testLayerSetBackwardError) {
     l->setBackwardError(0.1);
     ASSERT_EQ(l->getBackwardError(0), 0.1);
 }
+
+//TODO test_updateWeights
+
+//TODO test_propErrorBackward

@@ -109,7 +109,7 @@ public:
      * @param _neuronIndex The index of the neuron receiving the weighted sum of errors
      * @param _nextSum The weighted sum of propagating error
      */
-    void propErrorBackward(int _neuronIndex, double _nextSum);
+    void propErrorBackward(double _nextSum);
     /**
      * Allows for accessing the error that propagates backward in the network
      * @param _neuronIndex The index from which the error is requested
