@@ -166,9 +166,7 @@ public:
      * @param _localCoeff coefficient of the error propagating locally
      * @param _echoCoeff coefficient of the error resonating back and forth
      */
-    void setErrorCoeff(double _globalCoeff, double _backwardsCoeff,
-                        double _midCoeff, double _forwardCoeff,
-                        double _localCoeff, double  _echoCoeff);
+    void setErrorCoeff(double _backwardsCoeff);
     /**
      * Requests that all neurons perform one iteration of learning
      */

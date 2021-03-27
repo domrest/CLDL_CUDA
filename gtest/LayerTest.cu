@@ -111,6 +111,16 @@ TEST(LayerTest, testLayerSetBackwardError) {
     ASSERT_EQ(l->getBackwardError(0), 0.1);
 }
 
+TEST(LayerTest, testLayerSetErrorCoeff) {
+    Layer *l;
+    l = new Layer(10, 10);
+    l->setErrorCoeff(0.1);
+
+    Neuron *n;
+    n = l->getNeuron(5);
+    ASSERT_EQ(n->getBackwardsCoeff(), 0.1);
+}
+
 //TODO test_updateWeights
 
 //TODO test_propErrorBackward

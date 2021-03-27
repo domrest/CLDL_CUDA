@@ -94,6 +94,7 @@ public:
     __host__ void setBackwardError(double _leadError);
     __host__ void propErrorBackward(double _nextSum);
     __host__ double getBackwardError();
+    __host__ double getBackwardsCoeff();
     __host__ double getEchoError();
     __host__ void echoErrorBackward(double _nexSum);
 

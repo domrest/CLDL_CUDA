@@ -49,7 +49,12 @@ __global__ void gpu_propErrorBackwards(double _nextSum, Neuron *n) {
     double nextSum = _nextSum;
     //note propErrorBackward is a device method in neuron on Amirul's branch
     //need to merge
-    propErrorBackward(nextSum, n[i]);
+    //propErrorBackward(nextSum, n[i]);
+}
+
+__global__ void gpu_setErrorCoeff(Neuron *n, double _backwardsCoeff) {
+    int i = threadIdx.x;
+    *n[i].backwardsCoeff = _backwardsCoeff;
 }
 
 __global__ void gpu_updateWeights(Neuron *n, int nNeurons){
@@ -136,6 +141,7 @@ __host__ void Layer::propInputs(double *_gpu_InputOutputs) {
     int B = std::ceil(float(nThreads)/blockSize);   // Total number of blocks required
     dim3 T = dim3(nInputs, blockYDim);          // 2D block dimensions
     gpu_setInputs<<<B,T>>>(gpu_neurons, _gpu_InputOutputs, nNeurons);
+    cudaDeviceSynchronize();
 }
 
 
@@ -177,7 +183,8 @@ __host__ void Layer::setBackwardError(double _leadBackwardError) {
 
 //TODO propErrorBackward
 __host__ void Layer::propErrorBackward(double _nextSum) {
-    gpu_propErrorBackward<<<1,nNeurons>>>(_nextSum, gpu_neurons);
+    //gpu_propErrorBackward<<<1,nNeurons>>>(_nextSum, gpu_neurons);
+    cudaDeviceSynchronize();
 }
 
 __host__ double Layer::getBackwardError(int _neuronIndex){
@@ -189,6 +196,10 @@ __host__ double Layer::getBackwardError(int _neuronIndex){
 //*************************************************************************************
 
 //TODO setErrorCoeff
+__host__ void Layer::setErrorCoeff(double _backwardsCoeff) {
+    gpu_setErrorCoeff<<<1,nNeurons>>>(gpu_neurons, _backwardsCoeff);
+    cudaDeviceSynchronize();
+}
 
 //TODO updateWeights
 __host__ void Layer::updateWeights() {
@@ -198,6 +209,7 @@ __host__ void Layer::updateWeights() {
     int B = std::ceil(float(nThreads)/blockSize);   // Total number of blocks required
     dim3 T = dim3(nInputs, blockYDim);          // 2D block dimensions
     gpu_updateWeights<<<B,T>>>(gpu_neurons, nNeurons);
+    cudaDeviceSynchronize();
 }
 
 //*************************************************************************************
