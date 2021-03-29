@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.14)
 project(gtest LANGUAGES CUDA CXX)
 
 add_subdirectory(lib)
-add_executable(Google_Tests_run NeuronTest.cu LayerTest.cu)
+add_executable(Google_Tests_run NeuronTest.cu LayerTest.cu ../lib/Net.cu)
 
 target_link_libraries(Google_Tests_run PRIVATE CLDL gtest gtest_main)
 

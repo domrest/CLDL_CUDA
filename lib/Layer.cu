@@ -57,6 +57,7 @@ __global__ void gpu_setErrorCoeff(Neuron *n, double _backwardsCoeff) {
     *n[i].backwardsCoeff = _backwardsCoeff;
 }
 
+//TODO updateWeights
 __global__ void gpu_updateWeights(Neuron *n, int nNeurons){
     int i = threadIdx.x;    //Input index
     int j = (blockIdx.x*blockDim.y) + threadIdx.y;  //Neuron index
@@ -144,9 +145,8 @@ __host__ void Layer::propInputs(double *_gpu_InputOutputs) {
     cudaDeviceSynchronize();
 }
 
-
-
 //TODO calcOutputs
+// Dom has created calcOutputs in CUDA_TEST branch
 
 //*************************************************************************************
 //forward propagation of error:
@@ -164,8 +164,6 @@ __host__ void Layer::setForwardError(double _leadForwardError){
 //        neurons[i]->propErrorForward(_index, _value);
 //    }
 //}
-
-//TODO calcForwardError
 
 __host__ double Layer::getForwardError(int _neuronIndex){
     return (neurons[_neuronIndex].getForwardError());
@@ -237,13 +235,3 @@ __host__ Neuron* Layer::getNeuron(int _neuronIndex){
 __host__ int Layer::getnNeurons(){
     return (nNeurons);
 }
-
-//*************************************************************************************
-//saving and inspecting
-//*************************************************************************************
-
-//TODO saveWeights
-
-//TODO snapWeights
-
-//TODO printLayer
