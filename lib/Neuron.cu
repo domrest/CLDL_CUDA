@@ -218,6 +218,8 @@ __device__ void device_calcOutput(Neuron* n, int* _layerHasReported){
     if (*(*n).output > 0.49 && *(*n).iHaveReported == 0){
         *(*n).iHaveReported = 1;
     }
+    *_layerHasReported = *(*n).iHaveReported;
+
 }
 
 //int Neuron::calcOutput(int _layerHasReported){
