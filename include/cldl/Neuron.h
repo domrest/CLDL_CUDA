@@ -110,6 +110,8 @@ public:
     __host__ double getInputMidErrors(int index);
     __host__ void calcMidError();
     __host__ double getMidError();
+    __host__ void propMidErrorForward(int index, double value);
+    __host__ void propMidErrorBackward(double _nextSum);
 
     // Getters
     __host__ double getOutput();
@@ -180,6 +182,10 @@ __global__ void gpu_setValuesInArray(double _value, double* list);
 __global__ void gpu_setValueInArray(double _value, int index, double* list);
 __global__ void gpu_getSumAndMaxMin(double* sum, double* max_list, double* list_min, double* list, int length);
 
+__global__ void gpu_propError(double _value, double* sum, int* actMet, double* errorLocation);
+__device__ void device_propError(double _value, double* sum, int* actMet, double* errorLocation);
+
+
 __host__ void gpu_allocateInt(int** pointer, int value);
 __global__ void gpu_setInt(int* pointer, int value);
 
@@ -196,8 +202,10 @@ __device__ void device_doActivationPrime(double* output, double *_sum, int* actM
 
 
 __global__ void gpu_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength);
-
+__device__ void device_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength);
 __global__ void gpu_echoErrorBackward(double _nextSum, Neuron* n);
 __global__ void gpu_propErrorBackward(double _nextSum, Neuron* n);
 
 __global__ void gpu_multiplication(double value, double* output);
+
+__device__ void device_calcOutput(Neuron* n, int* threadHasReported);
