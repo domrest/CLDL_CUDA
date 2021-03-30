@@ -265,6 +265,3 @@ __host__ int Layer::getnNeurons(){
     return (nNeurons);
 }
 
-__host__ double* getOutput(int _neuronIndex){
-    return ()
-}
