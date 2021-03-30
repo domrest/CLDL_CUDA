@@ -8,6 +8,7 @@ __global__ void changeNInputs(Neuron* n){
     *(*n).nInputs = 2;
 }
 
+
 TEST(CUDATest, testObjectPointerCalls){
     Neuron* n = new Neuron(1);
     Neuron* d_n;
@@ -251,7 +252,4 @@ TEST(NeuronTest, testEchoErrorBackward){
     ASSERT_EQ(n->getEchoError(),0.5);
 
 }
-int main(int argc, char** argv){
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+

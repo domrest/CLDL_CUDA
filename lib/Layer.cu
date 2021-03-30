@@ -44,6 +44,9 @@ __global__ void gpu_setBackwardError(Neuron*n, double _leadBackwardError) {
     *n[i].backwardError = _leadBackwardError;
 }
 
+__global__ void gpu_calcOutputs(Neuron* neurons, int* layerHasReported){
+    device_calcOutput(&neurons[blockDim.x], layerHasReported);
+}
 
 // HOST FUNCTIONS //
 
@@ -113,6 +116,18 @@ __host__ void Layer::setInputs(double *_inputs) {
 //TODO propInputs
 
 //TODO calcOutputs
+
+__host__ void Layer::calcOutputs(){
+    // block id gets neuron
+    int* _layerHasReported;
+    gpu_allocateInt(&_layerHasReported, 0);
+    cudaMemcpy(_layerHasReported, &layerHasReported, sizeof(int), cudaMemcpyHostToDevice);
+
+    gpu_calcOutputs<<<nNeurons, nInputs>>>(gpu_neurons, _layerHasReported);
+
+    cudaMemcpy(&layerHasReported, _layerHasReported, sizeof(int), cudaMemcpyDeviceToHost);
+}
+
 
 //*************************************************************************************
 //forward propagation of error:

@@ -75,6 +75,7 @@ public:
      */
     void calcOutputs();
 
+
     /**
      * Sets the error to be propagated forward to all neurons in the first hidden layer only
      * @param _leadForwardError the error to be propagated forward
