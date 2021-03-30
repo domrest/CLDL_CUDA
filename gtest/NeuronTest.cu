@@ -1,8 +1,25 @@
 #include "cldl/Neuron.h"
 #include "gtest/gtest.h"
-
+#include <cuda_runtime.h>
 using namespace std;
 
+
+__global__ void changeNInputs(Neuron* n){
+    *(*n).nInputs = 2;
+}
+
+TEST(CUDATest, testObjectPointerCalls){
+    Neuron* n = new Neuron(1);
+    Neuron* d_n;
+
+    cudaMalloc((void**) &d_n, sizeof(Neuron));
+
+    cudaMemcpy(d_n, n, sizeof(Neuron), cudaMemcpyHostToDevice);
+
+    changeNInputs<<<1,1>>>(d_n);
+    ASSERT_EQ(n->getNInputs(), 2);
+
+}
 
 TEST(CUDATest, testCudaMalloc){
     double *d_a;
@@ -200,6 +217,40 @@ TEST(NeuronTest, testCalcMidError){
     ASSERT_EQ(n->getMidError(), 0.0);
 }
 
+TEST(NeuronTest, testSetAndGetBackwardError){
+    Neuron *n;
+    n = new Neuron(4);
+    double leadError = 2.0;
+    n->setBackwardError(leadError);
+    ASSERT_EQ(n->getBackwardError(),0.5);
+}
+
+TEST(NeuronTest, testGPUMultiplication){
+    double *output;
+    double result = 0;
+    gpu_allocateDouble(&output, 1.0);
+    gpu_multiplication<<<1,1>>>(2.0, output);
+    cudaMemcpy(&result, output, sizeof(double), cudaMemcpyDeviceToHost);
+
+    ASSERT_EQ(result, 2.0);
+
+
+}
+
+
+TEST(NeuronTest, testEchoErrorBackward){
+    Neuron* n = new Neuron(1);
+    Neuron* d_n;
+
+    cudaMalloc((void**) &d_n, sizeof(Neuron));
+
+    cudaMemcpy(d_n, n, sizeof(Neuron), cudaMemcpyHostToDevice);
+
+    gpu_echoErrorBackward<<<1,1>>>(2.0, d_n);
+
+    ASSERT_EQ(n->getEchoError(),0.5);
+
+}
 int main(int argc, char** argv){
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
