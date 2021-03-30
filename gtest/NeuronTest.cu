@@ -8,6 +8,7 @@ __global__ void changeNInputs(Neuron* n){
     *(*n).nInputs = 2;
 }
 
+
 TEST(CUDATest, testObjectPointerCalls){
     Neuron* n = new Neuron(1);
     Neuron* d_n;

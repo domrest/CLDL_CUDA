@@ -209,11 +209,11 @@ __host__ void Neuron::propInputs(int _index,  double _value){
 
 __device__ void device_calcOutput(Neuron* n, int* _layerHasReported){
     double* _value = new double[1024];
-    device_dotProduct((*n).inputs, (*n).weights, _value, (*n).output, *(*n).nInputs);
+    device_dotProduct((*n).inputs, (*n).weights, _value, (*n).sum, *(*n).nInputs);
     if (*(*n).myLayerIndex == 0){
         *(*n).output = *(*n).output * 0.01;
     }
-    device_doActivation((*n).output, (*n).output, (*n).actMet);
+    device_doActivation((*n).output, (*n).sum, (*n).actMet);
     *(*n).iHaveReported = *_layerHasReported;
     if (*(*n).output > 0.49 && *(*n).iHaveReported == 0){
         *(*n).iHaveReported = 1;
