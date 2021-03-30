@@ -181,6 +181,7 @@ private:
 
 
 __device__ void device_setLearningRate(Neuron* n, double _learningRate);
+__device__ void device_setBackwardError(double _leadError, Neuron* n);
 
 //Cuda Kernels
 __global__ void gpu_setValuesInArray(double _value, double* list);
