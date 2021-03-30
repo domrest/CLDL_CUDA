@@ -44,6 +44,9 @@ __global__ void gpu_setBackwardError(Neuron*n, double _leadBackwardError) {
     *n[i].backwardError = _leadBackwardError;
 }
 
+__global__ void gpu_calcOutputs(Neuron* neurons, int* layerHasReported){
+    device_calcOutput(&neurons[blockDim.x], layerHasReported);
+}
 __global__ void gpu_propErrorBackwards(double _nextSum, Neuron *n) {
     int i = threadIdx.x;
     double nextSum = _nextSum;
@@ -147,6 +150,18 @@ __host__ void Layer::propInputs(double *_gpu_InputOutputs) {
 
 //TODO calcOutputs
 // Dom has created calcOutputs in CUDA_TEST branch
+
+__host__ void Layer::calcOutputs(){
+    // block id gets neuron
+    int* _layerHasReported;
+    gpu_allocateInt(&_layerHasReported, 0);
+    cudaMemcpy(_layerHasReported, &layerHasReported, sizeof(int), cudaMemcpyHostToDevice);
+
+    gpu_calcOutputs<<<nNeurons, nInputs>>>(gpu_neurons, _layerHasReported);
+
+    cudaMemcpy(&layerHasReported, _layerHasReported, sizeof(int), cudaMemcpyDeviceToHost);
+}
+
 
 //*************************************************************************************
 //forward propagation of error:

@@ -94,12 +94,12 @@ public:
     __host__ void propErrorForward(int _index, double _value);
     __host__ double doActivation(double _sum);
 
-    __host__ void calcForwardError();
+    __host__ void calcForwardError(Neuron* n);
     __host__ double getForwardError();
 
     //Back Propagation of errors:
     __host__ void setBackwardError(double _leadError);
-    __host__ void propErrorBackward(double _nextSum);
+
     __host__ double getBackwardError();
     __device__ void echoErrorBackward(double _nextSum, Neuron* n);
     __host__ double getBackwardsCoeff();
@@ -111,6 +111,8 @@ public:
     __host__ double getInputMidErrors(int index);
     __host__ void calcMidError();
     __host__ double getMidError();
+    __host__ void propMidErrorForward(int index, double value);
+    __host__ void propMidErrorBackward(double _nextSum);
 
     // Getters
     __host__ double getOutput();
@@ -140,6 +142,7 @@ public:
     //forward propagation of error:
     double *inputErrors;
     double *forwardError;
+    double *calcForwardOutput;
 
     //back propagation of error
     double *backwardError;
@@ -181,6 +184,10 @@ __global__ void gpu_setValuesInArray(double _value, double* list);
 __global__ void gpu_setValueInArray(double _value, int index, double* list);
 __global__ void gpu_getSumAndMaxMin(double* sum, double* max_list, double* list_min, double* list, int length);
 
+__global__ void gpu_propError(double _value, double* sum, int* actMet, double* errorLocation);
+__device__ void device_propError(double _value, double* sum, int* actMet, double* errorLocation);
+
+
 __host__ void gpu_allocateInt(int** pointer, int value);
 __global__ void gpu_setInt(int* pointer, int value);
 
@@ -197,7 +204,16 @@ __device__ void device_doActivationPrime(double* output, double *_sum, int* actM
 
 
 __global__ void gpu_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength);
+__device__ void device_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength);
 
+__device__ void echoErrorBackward(double _nextSum, Neuron* n);
 __global__ void gpu_echoErrorBackward(double _nextSum, Neuron* n);
 
+__device__ void propErrorBackward(double _nextSum, Neuron* n);
+__global__ void gpu_propErrorBackward(double _nextSum, Neuron* n);
+
+__global__ void gpu_setBackwardError(double _leadError, Neuron* n);
+
 __global__ void gpu_multiplication(double value, double* output);
+
+__device__ void device_calcOutput(Neuron* n, int* threadHasReported);

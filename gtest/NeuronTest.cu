@@ -8,6 +8,7 @@ __global__ void changeNInputs(Neuron* n){
     *(*n).nInputs = 2;
 }
 
+
 TEST(CUDATest, testObjectPointerCalls){
     Neuron* n = new Neuron(1);
     Neuron* d_n;
@@ -218,10 +219,15 @@ TEST(NeuronTest, testCalcMidError){
 }
 
 TEST(NeuronTest, testSetAndGetBackwardError){
-    Neuron *n;
-    n = new Neuron(4);
-    double leadError = 2.0;
-    n->setBackwardError(leadError);
+    Neuron* n = new Neuron(4);
+    Neuron* d_n;
+
+    cudaMalloc((void**) &d_n, sizeof(Neuron));
+
+    cudaMemcpy(d_n, n, sizeof(Neuron), cudaMemcpyHostToDevice);
+
+    gpu_setBackwardError<<<1,4>>>(2.0, d_n);
+
     ASSERT_EQ(n->getBackwardError(),0.5);
 }
 
@@ -251,7 +257,18 @@ TEST(NeuronTest, testEchoErrorBackward){
     ASSERT_EQ(n->getEchoError(),0.5);
 
 }
-int main(int argc, char** argv){
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+
+TEST(NeuronTest, testPropErrorBackward){
+    Neuron* n = new Neuron(1);
+    Neuron* d_n;
+
+    cudaMalloc((void**) &d_n, sizeof(Neuron));
+
+    cudaMemcpy(d_n, n, sizeof(Neuron), cudaMemcpyHostToDevice);
+
+    gpu_propErrorBackward<<<1,1>>>(2.0, d_n);
+
+    ASSERT_EQ(n->getBackwardError(),0.5);
+
 }
+

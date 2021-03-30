@@ -207,6 +207,42 @@ __host__ void Neuron::propInputs(int _index,  double _value){
 
 //TODO calcOutput
 
+__device__ void device_calcOutput(Neuron* n, int* _layerHasReported){
+    double* _value = new double[1024];
+    device_dotProduct((*n).inputs, (*n).weights, _value, (*n).sum, *(*n).nInputs);
+    if (*(*n).myLayerIndex == 0){
+        *(*n).output = *(*n).output * 0.01;
+    }
+    device_doActivation((*n).output, (*n).sum, (*n).actMet);
+    *(*n).iHaveReported = *_layerHasReported;
+    if (*(*n).output > 0.49 && *(*n).iHaveReported == 0){
+        *(*n).iHaveReported = 1;
+    }
+    *_layerHasReported = *(*n).iHaveReported;
+
+}
+
+//int Neuron::calcOutput(int _layerHasReported){
+//    sum=0;
+//    for (int i=0; i<nInputs; i++){
+//        sum += inputs[i] * weights[i];
+//    }
+//    sum += bias;
+//    if (myLayerIndex == 0){
+//        sum = sum * 0.01;
+//    }
+//    assert(std::isfinite(sum));
+//    output = doActivation(sum);
+//    iHaveReported = _layerHasReported;
+//    if (output > 0.49 && iHaveReported == 0){
+//        //cout << "I'm saturating, " << output << " layer: " << myLayerIndex << " neuron: " << myNeuronIndex << endl;
+//        iHaveReported = 1;
+//    }
+//    assert(std::isfinite(output));
+//    return iHaveReported;
+//}
+
+
 //*************************************************************************************
 //forward propagation of error:
 //*************************************************************************************
@@ -231,6 +267,13 @@ __host__ void Neuron::propErrorForward(int _index, double _value){
 
 
 //TODO calcForwardError
+__device__ void calcForwardError(Neuron* n){
+    double* _value = new double[1024];
+    device_dotProduct((*n).inputErrors,(*n).weights,_value, (*n).calcForwardOutput,*(*n).nInputs);
+    device_doActivationPrime((*n).forwardError, (*n).sum, (*n).actMet);
+    *(*n).forwardError = *(*n).forwardError * *(*n).calcForwardOutput;
+}
+
 //__host__ void Neuron::calcForwardError() {
 //    double* _value;
 //    cudaMalloc((void**)&_value, sizeof(double)*getNInputs());
@@ -257,6 +300,24 @@ __host__ void Neuron::setBackwardError(double _leadError){
     gpu_multiplication<<<1,1>>>(_leadError,backwardError);
 }
 
+__device__ void setBackwardError(double _leadError, Neuron* n){
+    device_doActivationPrime((*n).backwardError, (*n).sum, (*n).actMet);
+    *(*n).backwardError = *(*n).backwardError * _leadError;
+}
+
+__global__ void gpu_setBackwardError(double _leadError, Neuron* n){
+    double leadError = _leadError;
+    setBackwardError(leadError, n);
+}
+
+__device__ void propErrorBackward(double _nextSum, Neuron* n){
+    device_doActivationPrime((*n).backwardError, (*n).sum, (*n).actMet);
+    *(*n).backwardError = *(*n).backwardError * _nextSum;
+}
+__global__ void gpu_propErrorBackward(double _nextSum, Neuron* n){
+    double nextSum = _nextSum;
+    propErrorBackward(nextSum, n);
+}
 
 __host__ double Neuron::getBackwardError(){
     double _backwardError = 0.0;
@@ -269,7 +330,7 @@ __host__ double Neuron::getEchoError() {
     cudaMemcpy(&_echoError, echoError, sizeof(double), cudaMemcpyDeviceToHost);
     return _echoError;
 }
-//TODO echoErrorBackward
+
 __device__ void echoErrorBackward(double _nextSum, Neuron* n) {
     device_doActivationPrime((*n).echoError,(*n).sum,(*n).actMet);
     *(*n).echoError = *(*n).echoError * _nextSum;
@@ -314,11 +375,18 @@ __host__ double Neuron::getMidError() {
     return _midError;
 }
 
-//TODO propMidErrorForward
+__host__ void Neuron::propMidErrorForward(int _index, double _value){
+    assert((_index>=0)&&(_index<getNInputs()));
+    gpu_setValueInArray<<<1,1>>>(_value, _index, inputMidErrors);
+}
 
 
 
-//TODO propMidErrorBackward
+
+__host__ void Neuron::propMidErrorBackward(double _nextSum){
+    //TODO needs test
+    gpu_propError<<<1,1>>>(_nextSum, sum, actMet, midError);
+}
 
 //*************************************************************************************
 //exploding/vanishing gradient:
@@ -445,6 +513,12 @@ __host__ void gpu_allocateDouble(double** pointer, double value){
 //*************************************************************************************
 //device CUDA kernels:
 //*************************************************************************************
+__device__ void device_propError(double _value, double* sum, int* actMet, double* errorLocation){
+    double output = 0;
+    device_doActivationPrime(&output, sum, actMet);
+    *errorLocation = _value * output;
+}
+
 __device__ void device_doActivation(double* output, double* sum, int* actMet) {
     switch(*actMet){
         case 0:
@@ -474,10 +548,13 @@ __device__ void device_doActivationPrime(double* output, double* input, int* act
     }
 }
 
-
 //*************************************************************************************
 //global CUDA kernels:
 //*************************************************************************************
+__global__ void gpu_propError(double _value, double* sum, int* actMet, double* errorLocation) {
+    device_propError(_value, sum, actMet, errorLocation);
+}
+
 
 __global__ void gpu_setValuesInArray(double _value, double* list){
     list[threadIdx.x] = _value;
@@ -534,6 +611,30 @@ __global__ void gpu_dotProduct(double* list1, double* list2, double* _value, dou
         *_target = _value[0];
     }
 }
+
+__device__ void device_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength){
+    int idx = threadIdx.x;
+    int stride = 1;
+
+    double target = 0.0;
+    for (int i = idx; i < arrayLength; i+=stride){
+        target += list1[i]*list2[i];
+    }
+
+    _value[idx] = target;
+    __syncthreads();
+
+    for (int size = stride/2; size>0; size/=2){
+        if (idx < size){
+            _value[idx] += _value[idx+size];
+        }
+        __syncthreads();
+    }
+    if (idx == 0){
+        *_target = _value[0];
+    }
+}
+
 __global__ void gpu_multiplication(double value, double* output){
     *output = value * *output;
 }
