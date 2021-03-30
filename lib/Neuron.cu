@@ -314,13 +314,13 @@ __global__ void gpu_setBackwardError(double _leadError, Neuron* n){
     device_setBackwardError(leadError, n);
 }
 
-__device__ void propErrorBackward(double _nextSum, Neuron* n){
+__device__ void device_propErrorBackward(double _nextSum, Neuron* n){
     device_doActivationPrime((*n).backwardError, (*n).sum, (*n).actMet);
     *(*n).backwardError = *(*n).backwardError * _nextSum;
 }
 __global__ void gpu_propErrorBackward(double _nextSum, Neuron* n){
     double nextSum = _nextSum;
-    propErrorBackward(nextSum, n);
+    device_propErrorBackward(nextSum, n);
 }
 
 __host__ double Neuron::getBackwardError(){
