@@ -176,6 +176,10 @@ __host__ void Neuron::setLearningRate(double _learningRate){
     gpu_setDouble<<<1,1>>>(learningRate, _learningRate);
 }
 
+__device__ void device_setLearningRate(Neuron* n, double _learningRate){
+    *n->learningRate = _learningRate;
+}
+
 __host__ double Neuron::getLearningRate() {
     double _learningRate;
     cudaMemcpy(&_learningRate, learningRate, sizeof(double), cudaMemcpyDeviceToHost);

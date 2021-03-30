@@ -179,6 +179,9 @@ private:
 
 };
 
+
+__device__ void device_setLearningRate(Neuron* n, double _learningRate);
+
 //Cuda Kernels
 __global__ void gpu_setValuesInArray(double _value, double* list);
 __global__ void gpu_setValueInArray(double _value, int index, double* list);
