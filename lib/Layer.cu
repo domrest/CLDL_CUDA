@@ -47,6 +47,31 @@ __global__ void gpu_setBackwardError(Neuron*n, double _leadBackwardError) {
 __global__ void gpu_calcOutputs(Neuron* neurons, int* layerHasReported){
     device_calcOutput(&neurons[blockDim.x], layerHasReported);
 }
+__global__ void gpu_propErrorBackwards(double _nextSum, Neuron *n) {
+    int i = threadIdx.x;
+    double nextSum = _nextSum;
+    //note propErrorBackward is a device method in neuron on Amirul's branch
+    //need to merge
+    //propErrorBackward(nextSum, n[i]);
+}
+
+__global__ void gpu_setErrorCoeff(Neuron *n, double _backwardsCoeff) {
+    int i = threadIdx.x;
+    *n[i].backwardsCoeff = _backwardsCoeff;
+}
+
+//TODO updateWeights
+__global__ void gpu_updateWeights(Neuron *n, int nNeurons){
+    int i = threadIdx.x;    //Input index
+    int j = (blockIdx.x*blockDim.y) + threadIdx.y;  //Neuron index
+    double force = 1;
+    *n[j].overallError = (*n[j].backwardsCoeff) * (*n[j].backwardError);
+    if (j<nNeurons) {
+        n[j].weights[i] += (*n[j].learningRate) * n[j].inputs[i] * (*n[j].overallError) * force;
+        //what is weightSum in neuron_old.cpp? Is it needed?
+    }
+}
+
 
 // HOST FUNCTIONS //
 
@@ -113,9 +138,18 @@ __host__ void Layer::setInputs(double *_inputs) {
     cudaDeviceSynchronize();
 }
 
-//TODO propInputs
+__host__ void Layer::propInputs(double *_gpu_InputOutputs) {
+    int nThreads = nInputs * nNeurons;          // Total number of CUDA threads required
+    int blockYDim = MAX_BLOCKSIZE/nInputs;      // Size of a block's Y dimension
+    int blockSize = nInputs * blockYDim;        // Size of required block
+    int B = std::ceil(float(nThreads)/blockSize);   // Total number of blocks required
+    dim3 T = dim3(nInputs, blockYDim);          // 2D block dimensions
+    gpu_setInputs<<<B,T>>>(gpu_neurons, _gpu_InputOutputs, nNeurons);
+    cudaDeviceSynchronize();
+}
 
 //TODO calcOutputs
+// Dom has created calcOutputs in CUDA_TEST branch
 
 __host__ void Layer::calcOutputs(){
     // block id gets neuron
@@ -146,8 +180,6 @@ __host__ void Layer::setForwardError(double _leadForwardError){
 //    }
 //}
 
-//TODO calcForwardError
-
 __host__ double Layer::getForwardError(int _neuronIndex){
     return (neurons[_neuronIndex].getForwardError());
 }
@@ -163,6 +195,10 @@ __host__ void Layer::setBackwardError(double _leadBackwardError) {
 }
 
 //TODO propErrorBackward
+__host__ void Layer::propErrorBackward(double _nextSum) {
+    //gpu_propErrorBackward<<<1,nNeurons>>>(_nextSum, gpu_neurons);
+    cudaDeviceSynchronize();
+}
 
 __host__ double Layer::getBackwardError(int _neuronIndex){
     return (neurons[_neuronIndex].getBackwardError());
@@ -173,8 +209,21 @@ __host__ double Layer::getBackwardError(int _neuronIndex){
 //*************************************************************************************
 
 //TODO setErrorCoeff
+__host__ void Layer::setErrorCoeff(double _backwardsCoeff) {
+    gpu_setErrorCoeff<<<1,nNeurons>>>(gpu_neurons, _backwardsCoeff);
+    cudaDeviceSynchronize();
+}
 
 //TODO updateWeights
+__host__ void Layer::updateWeights() {
+    int nThreads = nInputs * nNeurons;          // Total number of CUDA threads required
+    int blockYDim = MAX_BLOCKSIZE/nInputs;      // Size of a block's Y dimension
+    int blockSize = nInputs * blockYDim;        // Size of required block
+    int B = std::ceil(float(nThreads)/blockSize);   // Total number of blocks required
+    dim3 T = dim3(nInputs, blockYDim);          // 2D block dimensions
+    gpu_updateWeights<<<B,T>>>(gpu_neurons, nNeurons);
+    cudaDeviceSynchronize();
+}
 
 //*************************************************************************************
 //getters:
@@ -201,13 +250,3 @@ __host__ Neuron* Layer::getNeuron(int _neuronIndex){
 __host__ int Layer::getnNeurons(){
     return (nNeurons);
 }
-
-//*************************************************************************************
-//saving and inspecting
-//*************************************************************************************
-
-//TODO saveWeights
-
-//TODO snapWeights
-
-//TODO printLayer

@@ -66,7 +66,7 @@ public:
  * of learning, needs to be placed in an infinite loop.
  * @param _inputs A pointer to the array of inputs
  */
-    void setInputs(const double *_inputs);
+    void setInputs(double *_inputs);
 /**
  * It propagates the inputs forward through the network.
  */
@@ -278,7 +278,7 @@ private:
     /**
      * A pointer to the inputs of the network
      */
-    const double *inputs = 0;
+    double *inputs = 0;
     /**
      * The error to be propagated forward
      */

@@ -69,7 +69,7 @@ public:
      * @param _index The index of the input
      * @param _value The value of the input
      */
-    void propInputs(int _index, double _value);
+    void propInputs(double *_gpu_InputOutputs);
     /**
      * Demands that all neurons in this layer calculate their output
      */
@@ -110,7 +110,7 @@ public:
      * @param _neuronIndex The index of the neuron receiving the weighted sum of errors
      * @param _nextSum The weighted sum of propagating error
      */
-    void propErrorBackward(int _neuronIndex, double _nextSum);
+    void propErrorBackward(double _nextSum);
     /**
      * Allows for accessing the error that propagates backward in the network
      * @param _neuronIndex The index from which the error is requested
@@ -167,9 +167,7 @@ public:
      * @param _localCoeff coefficient of the error propagating locally
      * @param _echoCoeff coefficient of the error resonating back and forth
      */
-    void setErrorCoeff(double _globalCoeff, double _backwardsCoeff,
-                        double _midCoeff, double _forwardCoeff,
-                        double _localCoeff, double  _echoCoeff);
+    void setErrorCoeff(double _backwardsCoeff);
     /**
      * Requests that all neurons perform one iteration of learning
      */

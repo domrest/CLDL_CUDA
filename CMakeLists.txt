@@ -16,7 +16,7 @@ cuda_add_library(CLDL STATIC
 #        lib/Net.cpp
         lib/Neuron.cu
         lib/Layer.cu
-)
+        lib/Net.cu)
 
 set_target_properties(
         CLDL

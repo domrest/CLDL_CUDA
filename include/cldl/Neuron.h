@@ -101,6 +101,8 @@ public:
     __host__ void setBackwardError(double _leadError);
 
     __host__ double getBackwardError();
+    __device__ void echoErrorBackward(double _nextSum, Neuron* n);
+    __host__ double getBackwardsCoeff();
     __host__ double getEchoError();
 
 
