@@ -244,7 +244,7 @@ public:
      * @param _neuronIndex The index of the neuron
      * @return the activation of that neuron
      */
-    double* getOutput(int _neuronIndex);
+    double* getOutput();
     /**
      * Allows for accessing the sum output of any specific neuron
      * @param _neuronIndex The index of the neuron to access
