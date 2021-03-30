@@ -94,14 +94,13 @@ public:
     __host__ void propErrorForward(int _index, double _value);
     __host__ double doActivation(double _sum);
 
-    __host__ void calcForwardError();
+    __host__ void calcForwardError(Neuron* n);
     __host__ double getForwardError();
 
     //Back Propagation of errors:
     __host__ void setBackwardError(double _leadError);
-    __host__ void propErrorBackward(double _nextSum);
+
     __host__ double getBackwardError();
-    __device__ void echoErrorBackward(double _nextSum, Neuron* n);
     __host__ double getEchoError();
 
 
@@ -141,6 +140,7 @@ public:
     //forward propagation of error:
     double *inputErrors;
     double *forwardError;
+    double *calcForwardOutput;
 
     //back propagation of error
     double *backwardError;
@@ -203,7 +203,14 @@ __device__ void device_doActivationPrime(double* output, double *_sum, int* actM
 
 __global__ void gpu_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength);
 __device__ void device_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength);
+
+__device__ void echoErrorBackward(double _nextSum, Neuron* n);
 __global__ void gpu_echoErrorBackward(double _nextSum, Neuron* n);
+
+__device__ void propErrorBackward(double _nextSum, Neuron* n);
+__global__ void gpu_propErrorBackward(double _nextSum, Neuron* n);
+
+__global__ void gpu_setBackwardError(double _leadError, Neuron* n);
 
 __global__ void gpu_multiplication(double value, double* output);
 

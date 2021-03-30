@@ -267,6 +267,13 @@ __host__ void Neuron::propErrorForward(int _index, double _value){
 
 
 //TODO calcForwardError
+__device__ void calcForwardError(Neuron* n){
+    double* _value = new double[1024];
+    device_dotProduct((*n).inputErrors,(*n).weights,_value, (*n).calcForwardOutput,*(*n).nInputs);
+    device_doActivationPrime((*n).forwardError, (*n).sum, (*n).actMet);
+    *(*n).forwardError = *(*n).forwardError * *(*n).calcForwardOutput;
+}
+
 //__host__ void Neuron::calcForwardError() {
 //    double* _value;
 //    cudaMalloc((void**)&_value, sizeof(double)*getNInputs());
@@ -293,6 +300,24 @@ __host__ void Neuron::setBackwardError(double _leadError){
     gpu_multiplication<<<1,1>>>(_leadError,backwardError);
 }
 
+__device__ void setBackwardError(double _leadError, Neuron* n){
+    device_doActivationPrime((*n).backwardError, (*n).sum, (*n).actMet);
+    *(*n).backwardError = *(*n).backwardError * _leadError;
+}
+
+__global__ void gpu_setBackwardError(double _leadError, Neuron* n){
+    double leadError = _leadError;
+    setBackwardError(leadError, n);
+}
+
+__device__ void propErrorBackward(double _nextSum, Neuron* n){
+    device_doActivationPrime((*n).backwardError, (*n).sum, (*n).actMet);
+    *(*n).backwardError = *(*n).backwardError * _nextSum;
+}
+__global__ void gpu_propErrorBackward(double _nextSum, Neuron* n){
+    double nextSum = _nextSum;
+    propErrorBackward(nextSum, n);
+}
 
 __host__ double Neuron::getBackwardError(){
     double _backwardError = 0.0;
@@ -305,7 +330,7 @@ __host__ double Neuron::getEchoError() {
     cudaMemcpy(&_echoError, echoError, sizeof(double), cudaMemcpyDeviceToHost);
     return _echoError;
 }
-//TODO echoErrorBackward
+
 __device__ void echoErrorBackward(double _nextSum, Neuron* n) {
     device_doActivationPrime((*n).echoError,(*n).sum,(*n).actMet);
     *(*n).echoError = *(*n).echoError * _nextSum;
@@ -516,7 +541,6 @@ __device__ void device_doActivationPrime(double* output, double* input, int* act
             break;
     }
 }
-
 
 //*************************************************************************************
 //global CUDA kernels:
