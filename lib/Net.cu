@@ -70,19 +70,24 @@ __host__ void Net::setLearningRate(double _learningRate){
 //forward propagation of inputs:
 //*************************************************************************************
 
-//TODO setInputs
 __host__ void Net::setInputs(double* _inputs){
     inputs=_inputs;
     layers[0]->setInputs(inputs); //sets the inputs to the first layer only
 }
 
-//TODO propInputs
+__host__ void Net::propInputs() {
+    for (int i=0;i<nLayers-1; i++) {
+        layers[i]->calcOutputs();
+        double* layerOutputs = layers[i]->getOutput();
+        layers[i+1]->propInputs(layerOutputs);
+    }
+    layers[nLayers-1]->calcOutputs();
+}
 
 //*************************************************************************************
 //back propagation of error
 //*************************************************************************************
 
-//TODO setBackwardError
 __host__ void Net::setBackwardError(double _leadError){
     /* this is only for the final layer */
     theLeadError = _leadError;
@@ -92,20 +97,25 @@ __host__ void Net::setBackwardError(double _leadError){
      * then it would be implemented in a for-loop */
 }
 
-//TODO propErrorBackward
+__host__ void Net::propErrorBackward() {
+    for (int i = nLayers - 1; i > 0; i--) {
+        //double sum = layers[i]->getSum();
+        //layers[i-1]->propErrorBackward(sum);
+    }
+}
 
 //*************************************************************************************
 //learning:
 //*************************************************************************************
 
-//TODO setErrorCoeff
+/*
 void Net::setErrorCoeff(double _globalCoeff, double _backwardsCoeff, double _midCoeff, double _forwardCoeff, double _localCoeff, double  _echoCoeff){
     for (int i=0; i<nLayers; i++){
         layers[i]->setErrorCoeff(_backwardsCoeff);
     }
 }
+*/
 
-//TODO updateWeights
 void Net::updateWeights(){
     for (int i=nLayers-1; i>=0; i--){
         layers[i]->updateWeights();
