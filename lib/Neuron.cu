@@ -176,6 +176,10 @@ __host__ void Neuron::setLearningRate(double _learningRate){
     gpu_setDouble<<<1,1>>>(learningRate, _learningRate);
 }
 
+__device__ void device_setLearningRate(Neuron* n, double _learningRate){
+    *n->learningRate = _learningRate;
+}
+
 __host__ double Neuron::getLearningRate() {
     double _learningRate;
     cudaMemcpy(&_learningRate, learningRate, sizeof(double), cudaMemcpyDeviceToHost);
@@ -300,23 +304,23 @@ __host__ void Neuron::setBackwardError(double _leadError){
     gpu_multiplication<<<1,1>>>(_leadError,backwardError);
 }
 
-__device__ void setBackwardError(double _leadError, Neuron* n){
+__device__ void device_setBackwardError(double _leadError, Neuron* n){
     device_doActivationPrime((*n).backwardError, (*n).sum, (*n).actMet);
     *(*n).backwardError = *(*n).backwardError * _leadError;
 }
 
 __global__ void gpu_setBackwardError(double _leadError, Neuron* n){
     double leadError = _leadError;
-    setBackwardError(leadError, n);
+    device_setBackwardError(leadError, n);
 }
 
-__device__ void propErrorBackward(double _nextSum, Neuron* n){
+__device__ void device_propErrorBackward(double _nextSum, Neuron* n){
     device_doActivationPrime((*n).backwardError, (*n).sum, (*n).actMet);
     *(*n).backwardError = *(*n).backwardError * _nextSum;
 }
 __global__ void gpu_propErrorBackward(double _nextSum, Neuron* n){
     double nextSum = _nextSum;
-    propErrorBackward(nextSum, n);
+    device_propErrorBackward(nextSum, n);
 }
 
 __host__ double Neuron::getBackwardError(){
