@@ -169,7 +169,7 @@ __global__ void gpu_getOutputs(Neuron* n, double* _outputs){
 
 __host__ double* Layer::getOutput(){
     double* _outputs;
-    cudaMalloc(&_outputs, sizeof(double)*nInputs);
+    cudaMalloc(&_outputs, sizeof(double)*getnNeurons());
     gpu_getOutputs<<<1, getnNeurons()>>>(gpu_neurons, _outputs);
     return _outputs;
 //    return (neurons[_neuronIndex]->getOutput());
