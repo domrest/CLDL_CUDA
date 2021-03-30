@@ -215,8 +215,9 @@ __device__ void device_calcOutput(Neuron* n, int* _layerHasReported){
     double* _value = new double[1024];
     device_dotProduct((*n).inputs, (*n).weights, _value, (*n).sum, *(*n).nInputs);
     if (*(*n).myLayerIndex == 0){
-        *(*n).output = *(*n).output * 0.01;
+        *(*n).sum = *(*n).sum * 0.01;
     }
+    *(*n).sum += *(*n).bias;
     device_doActivation((*n).output, (*n).sum, (*n).actMet);
     *(*n).iHaveReported = *_layerHasReported;
     if (*(*n).output > 0.49 && *(*n).iHaveReported == 0){

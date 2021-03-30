@@ -138,7 +138,7 @@ __host__ void Layer::setInputs(double *_inputs) {
     cudaDeviceSynchronize();
 }
 
-__host__ void Layer::propInputs(double *_gpu_InputOutputs) {
+__host__ void Layer::propInputs(double* _gpu_InputOutputs) {
     int nThreads = nInputs * nNeurons;          // Total number of CUDA threads required
     int blockYDim = MAX_BLOCKSIZE/nInputs;      // Size of a block's Y dimension
     int blockSize = nInputs * blockYDim;        // Size of required block
@@ -161,6 +161,20 @@ __host__ void Layer::calcOutputs(){
 
     cudaMemcpy(&layerHasReported, _layerHasReported, sizeof(int), cudaMemcpyDeviceToHost);
 }
+
+__global__ void gpu_getOutputs(Neuron* n, double* _outputs){
+    int x = threadIdx.x;
+    _outputs[x] = *n[x].output;
+}
+
+__host__ double* Layer::getOutput(){
+    double* _outputs;
+    cudaMalloc(&_outputs, sizeof(double)*getnNeurons());
+    gpu_getOutputs<<<1, getnNeurons()>>>(gpu_neurons, _outputs);
+    return _outputs;
+//    return (neurons[_neuronIndex]->getOutput());
+}
+
 
 
 //*************************************************************************************
@@ -249,4 +263,8 @@ __host__ Neuron* Layer::getNeuron(int _neuronIndex){
 
 __host__ int Layer::getnNeurons(){
     return (nNeurons);
+}
+
+__host__ double* getOutput(int _neuronIndex){
+    return ()
 }
