@@ -106,13 +106,16 @@ __host__ void Net::propErrorBackward() {
 //learning:
 //*************************************************************************************
 
-/*void Net::setErrorCoeff(double _globalCoeff, double _backwardsCoeff, double _midCoeff, double _forwardCoeff, double _localCoeff, double  _echoCoeff){
+__host__ void Net::setErrorCoeff(double _globalCoeff, double _backwardsCoeff,
+                                 double _midCoeff, double _forwardCoeff,
+                                 double _localCoeff, double  _echoCoeff) {
     for (int i=0; i<nLayers; i++){
-        layers[i]->setErrorCoeff(_backwardsCoeff);
+        layers[i]->setErrorCoeff(_globalCoeff, _backwardsCoeff, _midCoeff,
+                                 _forwardCoeff, _localCoeff, _echoCoeff);
     }
-}*/
+}
 
-void Net::updateWeights(){
+__host__ void Net::updateWeights(){
     for (int i=nLayers-1; i>=0; i--){
         layers[i]->updateWeights();
     }

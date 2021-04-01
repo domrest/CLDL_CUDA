@@ -55,10 +55,17 @@ __global__ void gpu_propErrorBackwards(double _nextSum, Neuron *n) {
     device_propErrorBackward(nextSum, &n[i]);
 }
 
-/*__global__ void gpu_setErrorCoeff(Neuron *n, double _backwardsCoeff) {
+__global__ void gpu_setErrorCoeff(Neuron *n, double _globalCoeff, double _backwardsCoeff,
+                                  double _midCoeff, double _forwardCoeff,
+                                 double _localCoeff, double _echoCoeff) {
     int i = threadIdx.x;
     *n[i].backwardsCoeff = _backwardsCoeff;
-}*/
+    *n[i].midCoeff = _midCoeff;
+    *n[i].forwardCoeff =_forwardCoeff;
+    *n[i].globalCoeff = _globalCoeff;
+    *n[i].localCoeff = _localCoeff;
+    *n[i].echoCoeff= _echoCoeff;
+}
 
 //TODO updateWeights
 __global__ void gpu_updateWeights(Neuron *n, int nNeurons){
@@ -71,6 +78,10 @@ __global__ void gpu_updateWeights(Neuron *n, int nNeurons){
     }
 }
 
+__global__ void gpu_getOutputs(Neuron* n, double* _outputs){
+    int x = threadIdx.x;
+    _outputs[x] = *n[x].output;
+}
 
 // HOST FUNCTIONS //
 
@@ -97,7 +108,6 @@ __host__ Layer::~Layer(){
     cudaFree(gpu_inputs);
     cudaFree(gpu_neurons);
 }
-
 
 //*************************************************************************************
 //initialisation:
@@ -155,11 +165,6 @@ __host__ void Layer::calcOutputs(){
     cudaMemcpy(&layerHasReported, _layerHasReported, sizeof(int), cudaMemcpyDeviceToHost);
 }
 
-__global__ void gpu_getOutputs(Neuron* n, double* _outputs){
-    int x = threadIdx.x;
-    _outputs[x] = *n[x].output;
-}
-
 __host__ double* Layer::getOutput(){
     double* _outputs;
     cudaMalloc(&_outputs, sizeof(double)*getnNeurons());
@@ -167,8 +172,6 @@ __host__ double* Layer::getOutput(){
     return _outputs;
 //    return (neurons[_neuronIndex]->getOutput());
 }
-
-
 
 //*************************************************************************************
 //forward propagation of error:
@@ -214,11 +217,13 @@ __host__ double Layer::getBackwardError(int _neuronIndex){
 //learning:
 //*************************************************************************************
 
-//TODO setErrorCoeff
-/*__host__ void Layer::setErrorCoeff(double _backwardsCoeff) {
-    gpu_setErrorCoeff<<<1,nNeurons>>>(gpu_neurons, _backwardsCoeff);
+__host__ void Layer::setErrorCoeff(double _globalCoeff, double _backwardsCoeff,
+                            double _midCoeff, double _forwardCoeff,
+                            double _localCoeff, double  _echoCoeff) {
+    gpu_setErrorCoeff<<<1,nNeurons>>>(gpu_neurons, _globalCoeff, _backwardsCoeff,
+                                      _midCoeff, _forwardCoeff, _localCoeff, _echoCoeff);
     cudaDeviceSynchronize();
-}*/
+}
 
 __host__ void Layer::updateWeights() {
     int nThreads = nInputs * nNeurons;          // Total number of CUDA threads required

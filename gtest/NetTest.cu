@@ -3,7 +3,7 @@
 
 using namespace std;
 
-TEST(CUDATest, testNetConstructor) {
+TEST(NetTest, testNetConstructor) {
     constexpr int nLayers = 5;
     int nNeurons[nLayers] = {5,4,3,2,1};
     int* nNeuronsP = nNeurons;
@@ -36,7 +36,7 @@ TEST(CUDATest, testNetConstructor) {
 
 //TODO testInitNetwork
 
-TEST(CUDATest, testNetSetLearningRate) {
+TEST(NetTest, testNetSetLearningRate) {
     constexpr int nLayers = 5;
     int nNeurons[nLayers] = {5,4,3,2,1};
     int* nNeuronsP = nNeurons;
@@ -54,7 +54,7 @@ TEST(CUDATest, testNetSetLearningRate) {
     ASSERT_EQ(n->getLearningRate(), 0.1);
 }
 
-TEST(CUDATest, testNetSetInputs) {
+TEST(NetTest, testNetSetInputs) {
     constexpr int nLayers = 5;
     int nNeurons[nLayers] = {5,4,3,2,1};
     int* nNeuronsP = nNeurons;
@@ -76,7 +76,7 @@ TEST(CUDATest, testNetSetInputs) {
 
 //TODO testNetPropInputs
 
-TEST(CUDATest, testNetSetBackwardError) {
+TEST(NetTest, testNetSetBackwardError) {
     constexpr int nLayers = 5;
     int nNeurons[nLayers] = {5, 4, 3, 2, 1};
     int *nNeuronsP = nNeurons;
@@ -100,4 +100,21 @@ TEST(CUDATest, testNetSetBackwardError) {
 
 //TODO testNetUpdateWeights
 
-//TODO testNetSetErrorCoeff
+TEST(NetTest, testNetSetErrorCoeff) {
+    constexpr int nLayers = 5;
+    int nNeurons[nLayers] = {5, 4, 3, 2, 1};
+    int *nNeuronsP = nNeurons;
+    constexpr int nInputs = 10;
+
+    Net *net;
+    net = new Net(nLayers, nNeuronsP, nInputs);
+    net->setErrorCoeff(0,1,0,0,0,0);
+
+    Layer *l;
+    l = net->getLayer(4);
+
+    Neuron *n;
+    n = l->getNeuron(0);
+
+    ASSERT_EQ(n->getBackwardsCoeff(), 1.0);
+}

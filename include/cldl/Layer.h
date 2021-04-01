@@ -54,10 +54,12 @@ public:
      * see Neuron::actMethod for different options
      */
     __host__ void initLayer(int _layerIndex, Neuron::weightInitMethod _wim, Neuron::biasInitMethod _bim, Neuron::actMethod _am);
+
     /** Sets the learning rate.
      * @param _learningRate Sets the learning rate for all neurons.
      **/
     __host__ void setlearningRate(double _learningRate);
+
     /**
      * Sets the inputs to all neurons in the first hidden layer only
      * @param _inputs A pointer to an array of inputs
@@ -70,11 +72,11 @@ public:
      * @param _value The value of the input
      */
     __host__ void propInputs(double *_gpu_InputOutputs);
+
     /**
      * Demands that all neurons in this layer calculate their output
      */
     __host__ void calcOutputs();
-
 
     /**
      * Sets the error to be propagated forward to all neurons in the first hidden layer only
@@ -93,6 +95,7 @@ public:
      * calculates the forward error by doing a weighed sum of forward errors and the weights
      */
     __host__ void calcForwardError();
+
     /**
      * Allows for accessing the forward error of a specific neuron.
      * @param _neuronIndex Index of the neuron to request the error from
@@ -105,12 +108,14 @@ public:
      * @param _leadError the error to be propagated backward
      */
     __host__ void setBackwardError(double _leadError);
+
     /**
      * Sets the error to be propagated backward at all neurons, except those in the output layer.
      * @param _neuronIndex The index of the neuron receiving the weighted sum of errors
      * @param _nextSum The weighted sum of propagating error
      */
     __host__ void propErrorBackward(double _nextSum);
+
     /**
      * Allows for accessing the error that propagates backward in the network
      * @param _neuronIndex The index from which the error is requested
@@ -123,6 +128,7 @@ public:
      * @param _leadMidError The error to be propagated bilaterally
      */
     __host__ void setMidError(double _leadMidError);
+
     /**
      * calculates the error to be propagated bilaterally
      */
@@ -141,6 +147,7 @@ public:
      * @param _value Value of the mid error
      */
     __host__ void propMidErrorForward(int _index, double _value);
+
     /**
      * Sets the mid error in all neurons of a specific layer chosen by Net
      * @param _neuronIndex The index of the neuron to receive the error
@@ -167,7 +174,9 @@ public:
      * @param _localCoeff coefficient of the error propagating locally
      * @param _echoCoeff coefficient of the error resonating back and forth
      */
-    __host__ void setErrorCoeff(double _backwardsCoeff);
+    __host__ void setErrorCoeff(double _globalCoeff, double _backwardsCoeff,
+                                double _midCoeff, double _forwardCoeff,
+                                double _localCoeff, double  _echoCoeff);
 
     /**
      * Requests that all neurons perform one iteration of learning
@@ -190,6 +199,7 @@ public:
      * sets the error that propagates backwards and locally (for one layer only) for all neurons
      */
     __host__ void propGlobalErrorBackwardLocally(int _neuronIndex, double _nextSum);
+
     /**
      * Allows for accessing the local error of a specific neuron
      * @param _neuronIndex The index of the neuron to request the local error from
@@ -254,7 +264,6 @@ public:
      * @param _neuronIndex The index of the neuron to access
      * @return Returns the weighted sum of the inputs to that neuron
      */
-
     __host__ double getSumOutput(int _neuronIndex);
 
     /**
@@ -296,6 +305,7 @@ public:
      * Saves the temporal weight change of all weights in all neurons into files
      */
     __host__ void saveWeights();
+
     /**
      * Snaps the final distribution of weights in a specific layer,
      * this is overwritten every time the function is called
