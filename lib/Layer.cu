@@ -103,15 +103,12 @@ __host__ Layer::~Layer(){
 //initialisation:
 //*************************************************************************************
 
-//__host__ void Layer::initLayer(int _layerIndex, Neuron::weightInitMethod _wim, Neuron::biasInitMethod _bim, Neuron::actMethod _am){
-//    myLayerIndex = _layerIndex;
-//    for (int i=0; i<nNeurons; i++){
-//        neurons[i]->initNeuron(i, myLayerIndex, _wim, _bim, _am);
-//    }
-//}
-
-
-
+/*__host__ void Layer::initLayer(int _layerIndex, Neuron::weightInitMethod _wim, Neuron::biasInitMethod _bim, Neuron::actMethod _am){
+    myLayerIndex = _layerIndex;
+    for (int i=0; i<nNeurons; i++){
+        neurons[i].initNeuron(i, myLayerIndex, _wim, _bim, _am);
+    }
+}*/
 
 __host__ void Layer::setlearningRate(double _learningRate){
     learningRate=_learningRate;

@@ -39,6 +39,8 @@ TEST(LayerTest, testLayerConstructor){
 
 //TODO testLayerDestructor
 
+//TODO testInitLayer
+
 TEST(LayerTest, testLayerSetLearningRate) {
     Layer *l;
     l = new Layer(10, 10);
@@ -104,12 +106,13 @@ TEST(LayerTest, testLayerPropInputs) {
     ASSERT_EQ(l->getForwardError(0), 0.1);
 }*/
 
-/*TEST(LayerTest, testLayerSetBackwardError) {
+TEST(LayerTest, testLayerSetBackwardError) {
     Layer *l;
     l = new Layer(10, 10);
     l->setBackwardError(0.1);
-    ASSERT_EQ(l->getBackwardError(5), 0.1);
-}*/
+    ASSERT_EQ(l->leadBackwardError, 0.1);
+    ASSERT_EQ(l->getBackwardError(5), 0.025);
+}
 
 /*TEST(LayerTest, testLayerSetErrorCoeff) {
     Layer *l;
@@ -124,3 +127,5 @@ TEST(LayerTest, testLayerPropInputs) {
 //TODO test_updateWeights
 
 //TODO test_propErrorBackward
+
+//TODO testLayerCalcOutputs
