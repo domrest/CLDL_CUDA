@@ -122,6 +122,17 @@ TEST(LayerTest, testLayerSetErrorCoeff) {
     ASSERT_EQ(n->getBackwardsCoeff(), 1.0);
 }
 
+TEST(LayerTest, testLayerSetWeights) {
+    Layer *l;
+    l = new Layer(4, 6);
+    double weights[6] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+    l->setWeights(weights);
+
+    Neuron *n;
+    n = l->getNeuron(3);
+    ASSERT_EQ(n->getWeight(5), 6.0);
+}
+
 TEST(LayerTest, testLayerUpdateWeights) {
     Layer *l;
     l = new Layer(10, 10);
@@ -143,7 +154,6 @@ TEST(LayerTest, testLayerUpdateWeights) {
        "This does not equal 0.0025" */
 }
 
-//TODO testLayerCalcErrorWeightProductSum
 TEST(LayerTest, testLayerCalcErrorWeightProductSum) {
     Layer *l;
     l = new Layer(10, 12);
@@ -151,9 +161,9 @@ TEST(LayerTest, testLayerCalcErrorWeightProductSum) {
     l->setlearningRate(2.0);
     double in[12] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0};
     l->setInputs(in);
-    l->updateWeights();
-    double* sumlist;
-    sumlist = l->calcErrorWeightProductSum();
+    double weights[12] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0};
+    l->setWeights(weights);
+    double* sumlist = l->calcErrorWeightProductSum();
 
     Neuron *n;
     n = l->getNeuron(2);
@@ -163,15 +173,14 @@ TEST(LayerTest, testLayerCalcErrorWeightProductSum) {
     ASSERT_EQ(n->getInput(11), 12.0);
 
     ASSERT_EQ(n->getErrorWeightProducts(0),0.5);
-    ASSERT_EQ(n->getErrorWeightProducts(1),1.0);
-    ASSERT_EQ(n->getErrorWeightProducts(11), 6.0);
+    ASSERT_EQ(n->getErrorWeightProducts(1),1);
+    ASSERT_EQ(n->getErrorWeightProducts(11), 6);
 
     ASSERT_EQ(l->getSum(0), 5);
     ASSERT_EQ(l->getSum(1), 10);
     ASSERT_EQ(l->getSum(11), 60);
 }
 
-//TODO test_propErrorBackward
 TEST(LayerTest, testLayerpropErrorBackwards) {
     //Create "final" layer
     Layer *l;
@@ -179,10 +188,14 @@ TEST(LayerTest, testLayerpropErrorBackwards) {
     l->setlearningRate(2.0);
     l->setBackwardError(2.0);
     double in[12] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0};
-    l->setInputs(in);
-    l->updateWeights();
+    l->setInputs(in);   //used by updateWeights to calculate new weights
+    double weights[12] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0};
+    l->setWeights(weights);
     double *sumlist;
     sumlist = l->calcErrorWeightProductSum();
+    ASSERT_EQ(l->leadBackwardError, 2.0);
+    ASSERT_EQ(l->getBackwardError(5), 0.5);
+    ASSERT_EQ(l->getBackwardError(0), 0.5);
 
     //Create "previous" layer
     Layer *l2;

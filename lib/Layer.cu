@@ -34,6 +34,13 @@ __global__ void gpu_setInputs(Neuron* n, double *list, int nNeurons) {
         n[j].inputs[i] = list[i];
 }
 
+__global__ void gpu_setWeights(Neuron* n, double *list, int nNeurons) {
+    int i = threadIdx.x; // Input index
+    int j = (blockIdx.x*blockDim.y) + threadIdx.y; // Neuron index
+    if(j < nNeurons)
+        n[j].weights[i] = list[i];
+}
+
 __global__ void gpu_calcErrorWeightProductSum(Neuron* n, int nNeurons, int nInputs, double* sumlist) {
     int i = threadIdx.x;    //Input index
     int j = blockIdx.x;  //Neuron index
@@ -112,6 +119,7 @@ __host__ Layer::Layer(int _nNeurons, int _nInputs){
     }
 
     cudaMalloc((void**) &gpu_sumlist, sizeof(double)*_nInputs);
+    cudaMalloc((void**) &gpu_weights, sizeof(double)*nInputs);
     cudaMalloc( (void**) &gpu_inputs, sizeof(double)*nInputs);
     cudaMalloc( (void**) &gpu_neurons, sizeof(Neuron)*nNeurons);
     cudaMemcpy(gpu_neurons, neurons, sizeof(Neuron)*nNeurons, cudaMemcpyHostToDevice);
@@ -222,11 +230,6 @@ __host__ void Layer::setBackwardError(double _leadBackwardError) {
 }
 
 __host__ double* Layer::calcErrorWeightProductSum() {
-//    int nThreads = nInputs * nNeurons;          // Total number of CUDA threads required
-//    int blockYDim = MAX_BLOCKSIZE/nInputs;      // Size of a block's Y dimension
-//    int blockSize = nInputs * blockYDim;        // Size of required block
-//    int B = std::ceil(float(nThreads)/blockSize);   // Total number of blocks required
-//    dim3 T = dim3(nInputs, blockYDim);          // 2D block dimensions
     gpu_calcErrorWeightProductSum<<<nNeurons,nInputs>>>(gpu_neurons, nNeurons, nInputs, gpu_sumlist);
     cudaDeviceSynchronize();
     return gpu_sumlist;
@@ -268,6 +271,17 @@ __host__ void Layer::updateWeights() {
     dim3 T = dim3(nInputs, blockYDim);          // 2D block dimensions
     gpu_updateWeights<<<B,T>>>(gpu_neurons, nNeurons);
     cudaDeviceSynchronize();
+}
+
+//this method is for testing only
+__host__ void Layer::setWeights(double* _weightsList) {
+    cudaMemcpy(gpu_weights, _weightsList, sizeof(double)*nInputs,cudaMemcpyHostToDevice);
+    int nThreads = nInputs * nNeurons;          // Total number of CUDA threads required
+    int blockYDim = MAX_BLOCKSIZE/nInputs;      // Size of a block's Y dimension
+    int blockSize = nInputs * blockYDim;        // Size of required block
+    int B = std::ceil(float(nThreads)/blockSize);   // Total number of blocks required
+    dim3 T = dim3(nInputs, blockYDim);          // 2D block dimensions
+    gpu_setWeights<<<B,T>>>(gpu_neurons, gpu_weights, nNeurons);
 }
 
 //*************************************************************************************

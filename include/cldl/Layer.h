@@ -185,6 +185,9 @@ public:
      */
     __host__ void updateWeights();
 
+    //this method is for testing only
+    __host__ void setWeights(double* _weightsList);
+
     /**
      * Sets the global error, all neurons will have access to this error
      * @param _globalError The global error
@@ -336,6 +339,7 @@ public:
     //forward propagation of inputs:
     double *inputs;
     double *gpu_inputs;
+    double *gpu_weights;
 
     //forward propagation of error:
     double leadForwardError = 0;

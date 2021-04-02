@@ -122,6 +122,13 @@ __host__ void Net::updateWeights(){
     }
 }
 
+// this is only for testing
+__host__ void Net::setWeights(double* _weightsList) {
+    for (int i=0;i<nLayers;i++) {
+        layers[i]->setWeights(_weightsList);
+    }
+}
+
 //*************************************************************************************
 // getters:
 //*************************************************************************************

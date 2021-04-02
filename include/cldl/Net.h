@@ -144,6 +144,9 @@ public:
      */
     __host__ void updateWeights();
 
+    // this is only for testing
+    __host__ void setWeights(double* _weightsList);
+
     /**
      * Sets the global error, all layers and neurons will have access to this error
      * @param _globalError The global error

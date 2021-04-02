@@ -96,7 +96,44 @@ TEST(NetTest, testNetSetBackwardError) {
     ASSERT_EQ(n->getBackwardError(), 0.025);
 }
 
-//TODO testNetPropErrorBackward
+TEST(NetTest, testPropErrorBackward) {
+    constexpr int nLayers = 4;
+    int nNeurons[nLayers] = {4,3,2,1};
+    int* nNeuronsP = nNeurons;
+    constexpr int nInputs = 10;
+    double inputs[nInputs] = {1,2,3,4,5,6,7,8,9,10};
+    double weights[nInputs] = {1,2,3,4,5,6,7,8,9,10};
+    Net *net;
+    net = new Net(nLayers, nNeuronsP, nInputs);
+    net->setInputs(inputs);
+    net->setWeights(weights);
+
+    net->setBackwardError(2.0);
+    net->propErrorBackward();
+
+    Layer *l;
+    l = net->getLayer(3);   //final layer
+    Neuron *n;
+    n = l->getNeuron(0);
+    ASSERT_EQ(n->getWeight(1), 2);
+    ASSERT_EQ(l->leadBackwardError, 2.0);
+    ASSERT_EQ(l->getBackwardError(0), 0.5);
+
+    Layer *l2;
+    l2 = net->getLayer(2);   //second last layer
+    ASSERT_EQ(l2->getBackwardError(0), 0.125);
+    ASSERT_EQ(l2->getBackwardError(1), 0.25);
+
+    Layer *l3;
+    l3 = net->getLayer(1);  //third last layer/second layer
+    ASSERT_EQ(l3->getBackwardError(0), 0.09375);
+    ASSERT_EQ(l3->getBackwardError(1), 0.1875);
+    ASSERT_EQ(l3->getBackwardError(2), 0.28125);
+
+    Layer *l4;
+    l4 = net->getLayer(0);  //first layer
+    ASSERT_EQ(l4->getBackwardError(3),0.5625);
+}
 
 //TODO testNetUpdateWeights
 //Cant finish until propInputs and propErrorBackward are complete
