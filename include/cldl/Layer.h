@@ -264,7 +264,7 @@ public:
      */
     __host__ double* getOutput();
 
-    __host__ double getSum(int index);
+    __host__ double getErrorWeightProductSum(int index);
 
     /**
      * Allows for accessing the sum output of any specific neuron

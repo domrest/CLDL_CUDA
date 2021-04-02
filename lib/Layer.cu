@@ -235,7 +235,7 @@ __host__ double* Layer::calcErrorWeightProductSum() {
     return gpu_sumlist;
 }
 
-__host__ double Layer::getSum(int index) {
+__host__ double Layer::getErrorWeightProductSum(int index) {
     double _sum = 0.0;
     double* sum = gpu_sumlist + index;
     cudaMemcpy(&_sum, sum, sizeof(double), cudaMemcpyDeviceToHost);

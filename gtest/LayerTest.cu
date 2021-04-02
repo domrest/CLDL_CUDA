@@ -176,9 +176,9 @@ TEST(LayerTest, testLayerCalcErrorWeightProductSum) {
     ASSERT_EQ(n->getErrorWeightProducts(1),1);
     ASSERT_EQ(n->getErrorWeightProducts(11), 6);
 
-    ASSERT_EQ(l->getSum(0), 5);
-    ASSERT_EQ(l->getSum(1), 10);
-    ASSERT_EQ(l->getSum(11), 60);
+    ASSERT_EQ(l->getErrorWeightProductSum(0), 5);
+    ASSERT_EQ(l->getErrorWeightProductSum(1), 10);
+    ASSERT_EQ(l->getErrorWeightProductSum(11), 60);
 }
 
 TEST(LayerTest, testLayerpropErrorBackwards) {
