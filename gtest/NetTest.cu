@@ -99,6 +99,32 @@ TEST(NetTest, testNetSetBackwardError) {
 //TODO testNetPropErrorBackward
 
 //TODO testNetUpdateWeights
+//Cant finish until propInputs and propErrorBackward are complete
+TEST(NetTest, testNetupdateWeights) {
+    constexpr int nLayers = 5;
+    int nNeurons[nLayers] = {5,4,3,2,1};
+    int* nNeuronsP = nNeurons;
+    constexpr int nInputs = 10;
+    double inputs[nInputs] = {1,2,3,4,5,6,7,8,9,10};
+    double* inputsp = inputs;
+
+    Net *net;
+    net = new Net(nLayers, nNeuronsP, nInputs);
+    net->setInputs(inputsp);
+    net->setLearningRate(0.1);
+    net->setBackwardError(0.1);
+    net->setErrorCoeff(0,1,0,0,0,0);
+    net->updateWeights();
+
+    Layer *l;
+    l = net->getLayer(4);
+
+    Neuron *n;
+    n = l->getNeuron(0);
+    //ASSERT_EQ(n->getWeight(0), 0.01);
+    //ASSERT_EQ(n->getWeight(1), 0.02);
+    //ASSERT_EQ(n->getWeight(2), 0.03);
+}
 
 TEST(NetTest, testNetSetErrorCoeff) {
     constexpr int nLayers = 5;

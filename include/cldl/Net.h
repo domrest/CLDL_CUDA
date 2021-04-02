@@ -71,6 +71,7 @@ public:
      * @param _inputs A pointer to the array of inputs
      */
     __host__ void setInputs(double *_inputs);
+
     /**
      * It propagates the inputs forward through the network.
      */

@@ -96,9 +96,10 @@ __host__ void Net::setBackwardError(double _leadError){
 }
 
 __host__ void Net::propErrorBackward() {
+    double* sumlist;
     for (int i = nLayers - 1; i > 0; i--) {
-        //double sum = layers[i]->getSum();
-        //layers[i-1]->propErrorBackward(sum);
+        sumlist = layers[i]->calcErrorWeightProductSum();
+        //layers[i-1]->propErrorBackward(sumlist);
     }
 }
 

@@ -101,6 +101,7 @@ public:
     __host__ void setBackwardError(double _leadError);
 
     __host__ double getBackwardError();
+    __host__ double getErrorWeightProducts(int index);
     __device__ void echoErrorBackward(double _nextSum, Neuron* n);
     __host__ double getBackwardsCoeff();
     __host__ double getEchoError();
@@ -121,6 +122,7 @@ public:
     __host__ double getMinWeight();
     __host__ double getSumWeight();
     __host__ double getWeightChange();
+    __host__ double getWeight(int index);
 
 // initialisation:
 public:
@@ -146,6 +148,7 @@ public:
 
     //back propagation of error
     double *backwardError;
+    double *ErrorWeightProducts;
 
     //mid propagation of error
     double *inputMidErrors;

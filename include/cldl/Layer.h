@@ -109,6 +109,8 @@ public:
      */
     __host__ void setBackwardError(double _leadError);
 
+    __host__ double* calcErrorWeightProductSum();
+
     /**
      * Sets the error to be propagated backward at all neurons, except those in the output layer.
      * @param _neuronIndex The index of the neuron receiving the weighted sum of errors
@@ -259,6 +261,8 @@ public:
      */
     __host__ double* getOutput();
 
+    __host__ double getSum(int index);
+
     /**
      * Allows for accessing the sum output of any specific neuron
      * @param _neuronIndex The index of the neuron to access
@@ -325,6 +329,7 @@ public:
     int myLayerIndex = 0;
     Neuron *neurons;
     Neuron *gpu_neurons;
+    double* gpu_sumlist;
     
     int layerHasReported = 0;
 

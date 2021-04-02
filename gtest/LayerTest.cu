@@ -107,9 +107,9 @@ TEST(LayerTest, testLayerPropInputs) {
 TEST(LayerTest, testLayerSetBackwardError) {
     Layer *l;
     l = new Layer(10, 10);
-    l->setBackwardError(0.1);
-    ASSERT_EQ(l->leadBackwardError, 0.1);
-    ASSERT_EQ(l->getBackwardError(5), 0.025);
+    l->setBackwardError(0.01);
+    ASSERT_EQ(l->leadBackwardError, 0.01);
+    ASSERT_EQ(l->getBackwardError(5), 0.0025);
 }
 
 TEST(LayerTest, testLayerSetErrorCoeff) {
@@ -122,8 +122,62 @@ TEST(LayerTest, testLayerSetErrorCoeff) {
     ASSERT_EQ(n->getBackwardsCoeff(), 1.0);
 }
 
-//TODO test_updateWeights
+TEST(LayerTest, testLayerUpdateWeights) {
+    Layer *l;
+    l = new Layer(10, 10);
+    l->setBackwardError(2.0);
+    l->setlearningRate(2.0);
+    l->setErrorCoeff(0, 1, 0, 0, 0, 0);
+    double in[10] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
+    l->setInputs(in);
+    l->updateWeights();
+
+    Neuron *n;
+    n = l->getNeuron(5);
+    ASSERT_EQ(n->getWeight(0), 1.0);
+    ASSERT_EQ(n->getWeight(1), 2.0);
+    /* This test doesn't pass if BackwardError
+       and LearningRate are set to 0.1.
+       It says:
+       "getWeight(0) = 0.0025."
+       "This does not equal 0.0025" */
+}
+
+//TODO testLayerCalcErrorWeightProductSum
+TEST(LayerTest, testLayerCalcErrorWeightProductSum) {
+    Layer *l;
+    l = new Layer(10, 12);
+    l->setBackwardError(2.0);
+    l->setlearningRate(2.0);
+    double in[12] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0};
+    l->setInputs(in);
+    l->updateWeights();
+    double* sumlist;
+    sumlist = l->calcErrorWeightProductSum();
+
+    Neuron *n;
+    n = l->getNeuron(2);
+    ASSERT_EQ(l->leadBackwardError, 2.0);
+    ASSERT_EQ(l->getBackwardError(0), 0.5);
+    ASSERT_EQ(n->getWeight(11), 12.0);
+    ASSERT_EQ(n->getInput(11), 12.0);
+
+    ASSERT_EQ(n->getErrorWeightProducts(0),0.5);
+    ASSERT_EQ(n->getErrorWeightProducts(1),1.0);
+    ASSERT_EQ(n->getErrorWeightProducts(11), 6.0);
+
+    ASSERT_EQ(l->getSum(0), 5);
+    ASSERT_EQ(l->getSum(1), 10);
+    ASSERT_EQ(l->getSum(11), 60);
+}
 
 //TODO test_propErrorBackward
+TEST(LayerTest, testLayerpropErrorBackwards) {
+    Layer *l;
+    l = new Layer(10, 10);
+    l->propErrorBackward(0.1);
+
+    ASSERT_EQ(l->getBackwardError(5), 0.025);
+}
 
 //TODO testLayerCalcOutputs
