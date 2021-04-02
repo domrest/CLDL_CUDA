@@ -99,7 +99,7 @@ __host__ void Net::propErrorBackward() {
     double* sumlist;
     for (int i = nLayers - 1; i > 0; i--) {
         sumlist = layers[i]->calcErrorWeightProductSum();
-        //layers[i-1]->propErrorBackward(sumlist);
+        layers[i-1]->propErrorBackward(sumlist);
     }
 }
 

@@ -173,11 +173,28 @@ TEST(LayerTest, testLayerCalcErrorWeightProductSum) {
 
 //TODO test_propErrorBackward
 TEST(LayerTest, testLayerpropErrorBackwards) {
+    //Create "final" layer
     Layer *l;
-    l = new Layer(10, 10);
-    l->propErrorBackward(0.1);
+    l = new Layer(10, 12);
+    l->setlearningRate(2.0);
+    l->setBackwardError(2.0);
+    double in[12] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0};
+    l->setInputs(in);
+    l->updateWeights();
+    double *sumlist;
+    sumlist = l->calcErrorWeightProductSum();
 
-    ASSERT_EQ(l->getBackwardError(5), 0.025);
+    //Create "previous" layer
+    Layer *l2;
+    l2 = new Layer(12, 10);
+    l2->setBackwardError(2.0);
+    l2->setlearningRate(2.0);
+    l2->propErrorBackward(sumlist);
+
+    ASSERT_EQ(l2->getnNeurons(), 12);
+    ASSERT_EQ(l2->getBackwardError(0), 1.25);
+    ASSERT_EQ(l2->getBackwardError(1), 2.5);
+    ASSERT_EQ(l2->getBackwardError(11), 15);
 }
 
 //TODO testLayerCalcOutputs

@@ -66,10 +66,10 @@ __global__ void gpu_calcOutputs(Neuron* neurons, int* layerHasReported){
     device_calcOutput(&neurons[blockDim.x], layerHasReported);
 }
 
-__global__ void gpu_propErrorBackwards(Neuron *n, double _nextSum) {
+__global__ void gpu_propErrorBackwards(Neuron *n, double* _sumList) {
     int i = threadIdx.x;
-    double nextSum = _nextSum;
-    device_propErrorBackward(nextSum, &n[i]);
+    double* sumList = _sumList;
+    device_propErrorBackward(sumList[i], &n[i]);
 }
 
 __global__ void gpu_setErrorCoeff(Neuron *n, double _globalCoeff, double _backwardsCoeff,
@@ -239,8 +239,8 @@ __host__ double Layer::getSum(int index) {
     return _sum;
 }
 
-__host__ void Layer::propErrorBackward(double _nextSum) {
-    gpu_propErrorBackwards<<<1,nNeurons>>>(gpu_neurons, _nextSum);
+__host__ void Layer::propErrorBackward(double* _sumList) {
+    gpu_propErrorBackwards<<<1,nNeurons>>>(gpu_neurons, _sumList);
     cudaDeviceSynchronize();
 }
 
