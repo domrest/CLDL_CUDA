@@ -42,8 +42,8 @@ __global__ void gpu_setWeights(Neuron* n, double *list, int nNeurons) {
 }
 
 __global__ void gpu_calcErrorWeightProductSum(Neuron* n, int nNeurons, int nInputs, double* sumlist) {
-    int i = threadIdx.x;    //Input index
-    int j = blockIdx.x;  //Neuron index
+    int i = threadIdx.x; // Input index
+    int j = (blockIdx.x*blockDim.y) + threadIdx.y; // Neuron index
 
     if(i < nInputs && j < nNeurons)
         n[j].ErrorWeightProducts[i] = n[j].weights[i] * (*n[j].backwardError);
@@ -230,7 +230,12 @@ __host__ void Layer::setBackwardError(double _leadBackwardError) {
 }
 
 __host__ double* Layer::calcErrorWeightProductSum() {
-    gpu_calcErrorWeightProductSum<<<nNeurons,nInputs>>>(gpu_neurons, nNeurons, nInputs, gpu_sumlist);
+    int nThreads = nInputs * nNeurons;          // Total number of CUDA threads required
+    int blockYDim = MAX_BLOCKSIZE/nInputs;      // Size of a block's Y dimension
+    int blockSize = nInputs * blockYDim;        // Size of required block
+    int B = std::ceil(float(nThreads)/blockSize);   // Total number of blocks required
+    dim3 T = dim3(nInputs, blockYDim);          // 2D block dimensions
+    gpu_calcErrorWeightProductSum<<<B,T>>>(gpu_neurons, nNeurons, nInputs, gpu_sumlist);
     cudaDeviceSynchronize();
     return gpu_sumlist;
 }
