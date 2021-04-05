@@ -75,6 +75,27 @@ TEST(NetTest, testNetSetInputs) {
 }
 
 //TODO testNetPropInputs
+TEST(NetTest, testNetPropInputs) {
+    constexpr int nLayers = 3;
+    int nNeurons[nLayers] = {3,2,1};
+    int* nNeuronsP = nNeurons;
+    constexpr int nInputs = 4;
+    double inputs[nInputs] = {4,3,2,1};
+    double weights[nInputs] = {1,2,3,4};
+    Net *net;
+    net = new Net(nLayers, nNeuronsP, nInputs);
+    net->setInputs(inputs);
+    net->setWeights(weights);
+
+    net->propInputs();
+
+    Layer *l;
+    l = net->getLayer(0);
+    Neuron *n;
+    n = l->getNeuron(0);
+    ASSERT_EQ(n->getNInputs(), 4);
+    ASSERT_FLOAT_EQ(n->getOutput(), .04983399731);
+}
 
 TEST(NetTest, testNetSetBackwardError) {
     constexpr int nLayers = 5;

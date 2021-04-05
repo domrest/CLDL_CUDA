@@ -72,7 +72,6 @@ TEST(LayerTest, testLayerSetInputs) {
     ASSERT_EQ(n2->getInput(2), 3.0);
 }
 
-//TODO testLayerPropInputs
 TEST(LayerTest, testLayerPropInputs) {
     Layer *l;
     l = new Layer(200, 10);
@@ -209,5 +208,3 @@ TEST(LayerTest, testLayerpropErrorBackwards) {
     ASSERT_EQ(l2->getBackwardError(1), 2.5);
     ASSERT_EQ(l2->getBackwardError(11), 15);
 }
-
-//TODO testLayerCalcOutputs
