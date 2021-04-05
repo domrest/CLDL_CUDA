@@ -85,7 +85,7 @@ void Net::propInputs(){
         }
     }
     layers[nLayers-1]->calcOutputs();
-    /* this calculates the final outoup of the network,
+    /* this calculates the final output of the network,
      * i.e. the output of the final layer
      * but this is not fed into any further layer*/
 }

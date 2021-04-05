@@ -18,11 +18,10 @@
 
 using namespace std;
 
-//TODO Constructor
-__host__ Net::Net(int _nLayers, int *_nNeurons, int _nInputs) {
+__host__ Net::Net(int _nLayers, int* _nNeurons, int _nInputs) {
     nLayers = _nLayers; //no. of layers including inputs and outputs layers
     layers = new Layer*[nLayers];
-    int* nNeuronsp = _nNeurons; //number of neurons in each layer (note this is an array)
+    int* nNeuronsp = _nNeurons; //no. of neurons in each layer (note this is an array)
     nInputs=_nInputs;   // the no. of inputs to the network (i.e. the first layer)
 
     int nInput = 0; //temporary variable to use within the scope of for loop
@@ -45,7 +44,7 @@ __host__ Net::Net(int _nLayers, int *_nNeurons, int _nInputs) {
 //TODO Destructor
 /*__host__ Net::~Net(){
     for (int i=0; i<nLayers; i++){
-        delete layers[i];
+        delete &layers[i];
     }
     delete[] layers;
     delete[] errorGradient;
@@ -58,7 +57,6 @@ __host__ Net::Net(int _nLayers, int *_nNeurons, int _nInputs) {
     }
 }*/
 
-//TODO setLearningRate
 __host__ void Net::setLearningRate(double _learningRate){
     learningRate=_learningRate;
     for (int i=0; i<nLayers; i++){
@@ -70,19 +68,24 @@ __host__ void Net::setLearningRate(double _learningRate){
 //forward propagation of inputs:
 //*************************************************************************************
 
-//TODO setInputs
 __host__ void Net::setInputs(double* _inputs){
     inputs=_inputs;
     layers[0]->setInputs(inputs); //sets the inputs to the first layer only
 }
 
-//TODO propInputs
+__host__ void Net::propInputs() {
+    for (int i=0;i<nLayers-1; i++) {
+        layers[i]->calcOutputs();
+        double* layerOutputs = layers[i]->getOutput();
+        layers[i+1]->propInputs(layerOutputs);
+    }
+    layers[nLayers-1]->calcOutputs();
+}
 
 //*************************************************************************************
 //back propagation of error
 //*************************************************************************************
 
-//TODO setBackwardError
 __host__ void Net::setBackwardError(double _leadError){
     /* this is only for the final layer */
     theLeadError = _leadError;
@@ -92,23 +95,37 @@ __host__ void Net::setBackwardError(double _leadError){
      * then it would be implemented in a for-loop */
 }
 
-//TODO propErrorBackward
+__host__ void Net::propErrorBackward() {
+    double* sumlist;
+    for (int i = nLayers - 1; i > 0; i--) {
+        sumlist = layers[i]->calcErrorWeightProductSum();
+        layers[i-1]->propErrorBackward(sumlist);
+    }
+}
 
 //*************************************************************************************
 //learning:
 //*************************************************************************************
 
-//TODO setErrorCoeff
-void Net::setErrorCoeff(double _globalCoeff, double _backwardsCoeff, double _midCoeff, double _forwardCoeff, double _localCoeff, double  _echoCoeff){
+__host__ void Net::setErrorCoeff(double _globalCoeff, double _backwardsCoeff,
+                                 double _midCoeff, double _forwardCoeff,
+                                 double _localCoeff, double  _echoCoeff) {
     for (int i=0; i<nLayers; i++){
-        layers[i]->setErrorCoeff(_backwardsCoeff);
+        layers[i]->setErrorCoeff(_globalCoeff, _backwardsCoeff, _midCoeff,
+                                 _forwardCoeff, _localCoeff, _echoCoeff);
     }
 }
 
-//TODO updateWeights
-void Net::updateWeights(){
+__host__ void Net::updateWeights(){
     for (int i=nLayers-1; i>=0; i--){
         layers[i]->updateWeights();
+    }
+}
+
+// this is only for testing
+__host__ void Net::setWeights(double* _weightsList) {
+    for (int i=0;i<nLayers;i++) {
+        layers[i]->setWeights(_weightsList);
     }
 }
 
@@ -117,3 +134,24 @@ void Net::updateWeights(){
 //*************************************************************************************
 
 //TODO getters
+
+__host__ int Net::getnLayers(){
+    return (nLayers);
+}
+
+__host__ int Net::getnNeurons(){
+    return (nNeurons);
+}
+
+__host__ int Net::getnInputs(){
+    return (nInputs);
+}
+
+__host__ int Net::getnOutputs(){
+    return (nOutputs);
+}
+
+Layer* Net::getLayer(int _layerIndex){
+    assert(_layerIndex<nLayers);
+    return (layers[_layerIndex]);
+}

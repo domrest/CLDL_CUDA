@@ -29,9 +29,9 @@ __host__ Neuron::Neuron(int _nInputs)
     cudaMalloc((void**)&inputErrors, sizeof(double)*_nInputs);
     gpu_allocateDouble(&forwardError, 0.0);
 
-
     // back propagation of error
     gpu_allocateDouble(&backwardError, 0.0);
+    cudaMalloc((void**)&ErrorWeightProducts, sizeof(double)*_nInputs);
 
     // mid propagation of error
     cudaMalloc((void**)&inputMidErrors, sizeof(double)*_nInputs);
@@ -91,6 +91,7 @@ __host__ Neuron::~Neuron(){
 
     // back propagation of error
     cudaFree(backwardError);
+    cudaFree(ErrorWeightProducts);
 
     // mid propagation of error
     cudaFree(inputMidErrors);
@@ -176,6 +177,10 @@ __host__ void Neuron::setLearningRate(double _learningRate){
     gpu_setDouble<<<1,1>>>(learningRate, _learningRate);
 }
 
+__device__ void device_setLearningRate(Neuron* n, double _learningRate){
+    *n->learningRate = _learningRate;
+}
+
 __host__ double Neuron::getLearningRate() {
     double _learningRate;
     cudaMemcpy(&_learningRate, learningRate, sizeof(double), cudaMemcpyDeviceToHost);
@@ -211,8 +216,9 @@ __device__ void device_calcOutput(Neuron* n, int* _layerHasReported){
     double* _value = new double[1024];
     device_dotProduct((*n).inputs, (*n).weights, _value, (*n).sum, *(*n).nInputs);
     if (*(*n).myLayerIndex == 0){
-        *(*n).output = *(*n).output * 0.01;
+        *(*n).sum = *(*n).sum * 0.01;
     }
+    *(*n).sum += *(*n).bias;
     device_doActivation((*n).output, (*n).sum, (*n).actMet);
     *(*n).iHaveReported = *_layerHasReported;
     if (*(*n).output > 0.49 && *(*n).iHaveReported == 0){
@@ -303,29 +309,38 @@ __host__ void Neuron::setBackwardError(double _leadError){
     gpu_multiplication<<<1,1>>>(_leadError,backwardError);
 }
 
-__device__ void setBackwardError(double _leadError, Neuron* n){
+__device__ void device_setBackwardError(double _leadError, Neuron* n){
     device_doActivationPrime((*n).backwardError, (*n).sum, (*n).actMet);
     *(*n).backwardError = *(*n).backwardError * _leadError;
 }
 
 __global__ void gpu_setBackwardError(double _leadError, Neuron* n){
     double leadError = _leadError;
-    setBackwardError(leadError, n);
+    device_setBackwardError(leadError, n);
 }
 
-__device__ void propErrorBackward(double _nextSum, Neuron* n){
+__device__ void device_propErrorBackward(double _nextSum, Neuron* n){
     device_doActivationPrime((*n).backwardError, (*n).sum, (*n).actMet);
     *(*n).backwardError = *(*n).backwardError * _nextSum;
 }
+
 __global__ void gpu_propErrorBackward(double _nextSum, Neuron* n){
     double nextSum = _nextSum;
-    propErrorBackward(nextSum, n);
+    device_propErrorBackward(nextSum, n);
 }
 
 __host__ double Neuron::getBackwardError(){
     double _backwardError = 0.0;
     cudaMemcpy(&_backwardError, backwardError, sizeof(double), cudaMemcpyDeviceToHost);
     return _backwardError;
+}
+
+__host__ double Neuron::getErrorWeightProducts(int index) {
+    double _ewProd = 0.0;
+
+    double* ewProd = ErrorWeightProducts + index;
+    cudaMemcpy(&_ewProd, ewProd, sizeof(double), cudaMemcpyDeviceToHost);
+    return _ewProd;
 }
 
 __host__ double Neuron::getEchoError() {
@@ -410,6 +425,14 @@ __host__ double Neuron::getBackwardsCoeff(){
 }
 
 //TODO updateWeights
+
+__host__ double Neuron::getWeight(int index) {
+    double _weight = 0.0;
+
+    double* weight = weights + index;
+    cudaMemcpy(&_weight, weight, sizeof(double), cudaMemcpyDeviceToHost);
+    return _weight;
+}
 
 //*************************************************************************************
 //global settings
