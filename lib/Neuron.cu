@@ -210,11 +210,14 @@ __host__ void Neuron::propInputs(int _index,  double _value){
     gpu_setValueInArray<<<1,1>>>(_value,_index, inputs);
 }
 
-//TODO calcOutput
 
-__device__ void device_calcOutput(Neuron* n, int* _layerHasReported){
+__device__ void device_calcOutput(Neuron* n){
     double* _value = new double[1024];
-    device_dotProduct((*n).inputs, (*n).weights, _value, (*n).sum, *(*n).nInputs);
+    int nInputs = *(n->nInputs);
+    device_dotProduct((*n).inputs, (*n).weights, _value, (*n).sum, nInputs);
+}
+
+__device__ void device_calcOutputCont(Neuron* n, int* _layerHasReported){
     if (*(*n).myLayerIndex == 0){
         *(*n).sum = *(*n).sum * 0.01;
     }
@@ -225,7 +228,6 @@ __device__ void device_calcOutput(Neuron* n, int* _layerHasReported){
         *(*n).iHaveReported = 1;
     }
     *_layerHasReported = *(*n).iHaveReported;
-
 }
 
 //int Neuron::calcOutput(int _layerHasReported){

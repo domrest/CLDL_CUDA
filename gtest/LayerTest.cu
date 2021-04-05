@@ -97,6 +97,44 @@ TEST(LayerTest, testLayerPropInputs) {
     ASSERT_EQ(n2->getInput(2), 3.0);
 }
 
+TEST(LayerTest, testLayerCalcOutputs) {
+    Layer *l;
+    int neuronNum = 3;
+    l = new Layer(neuronNum, 3);
+
+    double inputs[3] = {2.0, 2.0, 2.0};
+    double weights[3] = {3.0, 3.0, 3.0};
+
+    l->setInputs(inputs);
+    l->setWeights(weights);
+    Neuron *n;
+    n = l->getNeuron(0);
+    ASSERT_EQ(n->getInput(0), 2.0);
+    ASSERT_EQ(n->getWeight(0), 3.0);
+
+    l->calcOutputs();
+
+    //ASSERT_EQ(l->inputs[3], 4.0);
+    n = l->getNeuron(0);
+//    ASSERT_EQ(n->getInput(0), 2.0);
+    ASSERT_EQ(n->getNInputs(), 3);
+    ASSERT_DOUBLE_EQ(n->getSumOutput(), 0.18);
+    ASSERT_DOUBLE_EQ(n->getOutput(), 0.044878892373580115);
+
+
+    Neuron *n2;
+    n2 = l->getNeuron(1);
+    ASSERT_DOUBLE_EQ(n2->getSumOutput(), 0.18);
+    ASSERT_DOUBLE_EQ(n2->getOutput(), 0.044878892373580115);
+
+    Neuron *n3;
+    n3 = l->getNeuron(2);
+    ASSERT_DOUBLE_EQ(n3->getSumOutput(), 0.18);
+    ASSERT_DOUBLE_EQ(n3->getOutput(), 0.044878892373580115);
+
+}
+
+
 /*TEST(LayerTest, testLayerSetForwardError) {
     Layer *l;
     l = new Layer(10, 10);
