@@ -272,3 +272,12 @@ TEST(NeuronTest, testPropErrorBackward){
 
 }
 
+TEST(NeuronTest, testCalcForwardError){
+    Neuron* n = new Neuron(4);
+    Neuron* d_n;
+
+    cudaMalloc((void**) &d_n, sizeof(Neuron));
+    n->setForwardError(2.0);
+    gpu_calcForwardError<<<1,1>>>(d_n);
+    ASSERT_EQ(n->getForwardError(), 0);
+}

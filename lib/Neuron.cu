@@ -266,12 +266,15 @@ __host__ void Neuron::propErrorForward(int _index, double _value){
 }
 
 
-//TODO calcForwardError
-__device__ void calcForwardError(Neuron* n){
+__device__ void device_calcForwardError(Neuron* n){
     double* _value = new double[1024];
     device_dotProduct((*n).inputErrors,(*n).weights,_value, (*n).calcForwardOutput,*(*n).nInputs);
     device_doActivationPrime((*n).forwardError, (*n).sum, (*n).actMet);
     *(*n).forwardError = *(*n).forwardError * *(*n).calcForwardOutput;
+}
+
+__global__ void gpu_calcForwardError(Neuron* n){
+    device_calcForwardError(n);
 }
 
 //__host__ void Neuron::calcForwardError() {
