@@ -39,8 +39,6 @@ TEST(LayerTest, testLayerConstructor){
 
 //TODO testLayerDestructor
 
-//TODO testInitLayer
-
 TEST(LayerTest, testLayerSetLearningRate) {
     Layer *l;
     l = new Layer(10, 10);
@@ -132,13 +130,6 @@ TEST(LayerTest, testLayerCalcOutputs) {
     ASSERT_DOUBLE_EQ(n3->getOutput(), 0.044878892373580115);
 
 }
-
-/*TEST(LayerTest, testLayerSetForwardError) {
-    Layer *l;
-    l = new Layer(10, 10);
-    l->setForwardError(0.1);
-    ASSERT_EQ(l->getForwardError(0), 0.1);
-}*/
 
 TEST(LayerTest, testLayerSetBackwardError) {
     Layer *l;

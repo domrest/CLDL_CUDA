@@ -34,8 +34,6 @@ TEST(NetTest, testNetConstructor) {
 
 //TODO testDestructor
 
-//TODO testInitNetwork
-
 TEST(NetTest, testNetSetLearningRate) {
     constexpr int nLayers = 5;
     int nNeurons[nLayers] = {5,4,3,2,1};
@@ -198,11 +196,16 @@ TEST(NetTest, testNetupdateWeights) {
     l = net->getLayer(0);
     Neuron *n;
     n = l->getNeuron(0);
-    ASSERT_FLOAT_EQ(n->getOutput(), 0.024979187);
+    ASSERT_FLOAT_EQ(n->getOutput(), 0.02497918748);
+    ASSERT_FLOAT_EQ(n->getBackwardError(), 0.0031117371);
+    ASSERT_FLOAT_EQ(n->getWeight(0), 1.001244695);
+    ASSERT_FLOAT_EQ(n->getWeight(1), 1.000933521);
 
     l = net->getLayer(1);
     n = l->getNeuron(0);
     ASSERT_FLOAT_EQ(n->getOutput(), 0.018725628);
+    ASSERT_FLOAT_EQ(n->getBackwardError(), 0.006239045);
+    ASSERT_FLOAT_EQ(n->getWeight(0), 1.000015584);
 
     l = net->getLayer(2);
     n = l->getNeuron(0);

@@ -415,15 +415,11 @@ __host__ void Neuron::propMidErrorBackward(double _nextSum){
 //learning
 //*************************************************************************************
 
-//TODO setErrorCoeff
-
 __host__ double Neuron::getBackwardsCoeff(){
     double _backwardsCoeff = 0.0;
     cudaMemcpy(&_backwardsCoeff, backwardsCoeff, sizeof(double), cudaMemcpyDeviceToHost);
     return _backwardsCoeff;
 }
-
-//TODO updateWeights
 
 __host__ double Neuron::getWeight(int index) {
     double _weight = 0.0;
