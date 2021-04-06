@@ -181,13 +181,22 @@ TEST(LayerTest, testLayerUpdateWeights) {
 
     Neuron *n;
     n = l->getNeuron(5);
-    ASSERT_EQ(n->getWeight(0), 1.0);
-    ASSERT_EQ(n->getWeight(1), 2.0);
-    /* This test doesn't pass if BackwardError
-       and LearningRate are set to 0.1.
-       It says:
-       "getWeight(0) = 0.0025."
-       "This does not equal 0.0025" */
+    ASSERT_FLOAT_EQ(n->getWeight(0), 1.0);
+    ASSERT_FLOAT_EQ(n->getWeight(1), 2.0);
+
+    Layer *l_2;
+    l_2 = new Layer(10, 10);
+    l_2->setBackwardError(0.1);
+    l_2->setlearningRate(0.1);
+    l_2->setErrorCoeff(0, 1, 0, 0, 0, 0);
+    double in_2[10] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
+    l_2->setInputs(in_2);
+    l_2->updateWeights();
+
+    Neuron *n_2;
+    n_2 = l_2->getNeuron(5);
+    ASSERT_FLOAT_EQ(n_2->getWeight(0), 0.0025);
+    ASSERT_FLOAT_EQ(n_2->getWeight(1), 0.005);
 }
 
 TEST(LayerTest, testLayerCalcErrorWeightProductSum) {

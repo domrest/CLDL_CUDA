@@ -98,10 +98,9 @@ __global__ void gpu_setErrorCoeff(Neuron *n, double _globalCoeff, double _backwa
 __global__ void gpu_updateWeights(Neuron *n, int nNeurons){
     int i = threadIdx.x;    //Input index
     int j = (blockIdx.x*blockDim.y) + threadIdx.y;  //Neuron index
-    double force = 1;
+    //double force = 1;
     if (j<nNeurons) {
-        n[j].weights[i] += (*n[j].learningRate) * n[j].inputs[i] * (*n[j].backwardError) * force;
-        //what is weightSum in neuron_old.cpp? Is it needed?
+        n[j].weights[i] += (*n[j].learningRate) * n[j].inputs[i] * (*n[j].backwardError); // * force;
     }
 }
 
