@@ -147,13 +147,10 @@ __host__ void Neuron::initNeuron(int _neuronIndex, int _layerIndex, weightInitMe
                     (std::chrono::system_clock::now().time_since_epoch()).count());
 
             curandGenerateUniformDouble(gen, weights, getNInputs());
-            //TODO set the random
-//            weights[i] = (((double) rand() / (RAND_MAX))); //* 2) -1;
             break;
-            //cout << " Neuron: weight is: " << weights[i] << endl;
             /* rand function generates a random function between
-             * 0 and RAND_MAX, after the devision the weights are
-             * set to a value between 0 and 1 */
+             * 0 and 1, with the CUDA Random generator seed set
+             * to current time from UNIX epoch (inherently unique)*/
     }
     cudaMemcpy(initialWeights, weights, sizeof(double)*getNInputs(), cudaMemcpyDeviceToDevice);
 
