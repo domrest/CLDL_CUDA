@@ -73,10 +73,9 @@ __global__ void gpu_calcOutputsContinued(Neuron* neurons, int* layerHasReported)
     device_calcOutputCont(&neurons[threadIdx.x], layerHasReported);
 }
 
-__global__ void gpu_calcOutputs(Neuron* neurons){
+__global__ void gpu_calcOutputs(Neuron* neurons) {
     device_calcOutput(&neurons[blockIdx.x]);
 }
-
 __global__ void gpu_propErrorBackwards(Neuron *n, double* _sumList) {
     int i = threadIdx.x;
     double* sumList = _sumList;

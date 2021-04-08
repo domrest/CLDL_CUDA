@@ -96,6 +96,7 @@ public:
 
 
     __host__ double getForwardError();
+    __host__ void calcForwardError();
 
     //Back Propagation of errors:
     __host__ void setBackwardError(double _leadError);

@@ -277,7 +277,9 @@ TEST(NeuronTest, testCalcForwardError){
     Neuron* d_n;
 
     cudaMalloc((void**) &d_n, sizeof(Neuron));
+    cudaMemcpy(d_n, n, sizeof(Neuron), cudaMemcpyHostToDevice);
+
     n->setForwardError(2.0);
-    gpu_calcForwardError<<<1,1>>>(d_n);
+    gpu_calcForwardError<<<1,n->getNInputs()>>>(d_n);
     ASSERT_EQ(n->getForwardError(), 0);
 }

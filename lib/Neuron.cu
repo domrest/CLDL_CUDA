@@ -28,6 +28,7 @@ __host__ Neuron::Neuron(int _nInputs)
     // forward propagation of error
     cudaMalloc((void**)&inputErrors, sizeof(double)*_nInputs);
     gpu_allocateDouble(&forwardError, 0.0);
+    gpu_allocateDouble(&calcForwardOutput,0.0);
 
     // back propagation of error
     gpu_allocateDouble(&backwardError, 0.0);
@@ -88,6 +89,7 @@ __host__ Neuron::~Neuron(){
     // forward propagation of error
     cudaFree(inputErrors);
     cudaFree(forwardError);
+    cudaFree(calcForwardOutput);
 
     // back propagation of error
     cudaFree(backwardError);
@@ -276,7 +278,8 @@ __host__ void Neuron::propErrorForward(int _index, double _value){
 
 __device__ void device_calcForwardError(Neuron* n){
     double* _value = new double[1024];
-    device_dotProduct((*n).inputErrors,(*n).weights,_value, (*n).calcForwardOutput,*(*n).nInputs);
+    int nInputs = *(n->nInputs);
+    device_dotProduct((*n).inputErrors,(*n).weights, _value, (*n).calcForwardOutput, nInputs);
     device_doActivationPrime((*n).forwardError, (*n).sum, (*n).actMet);
     *(*n).forwardError = *(*n).forwardError * *(*n).calcForwardOutput;
 }
@@ -288,10 +291,10 @@ __global__ void gpu_calcForwardError(Neuron* n){
 //__host__ void Neuron::calcForwardError() {
 //    double* _value;
 //    cudaMalloc((void**)&_value, sizeof(double)*getNInputs());
-//    gpu_dotProduct<<<1, getNInputs()>>>(inputErrors, weights, _value, fowardError, getNInputs());
-
-    //TODO forwardError must be multiplied with doActivationPrime(sum)
-    //TODO assert forwardError isFinite
+//    gpu_dotProduct<<<1, getNInputs()>>>(inputErrors, weights, _value, forwardError, getNInputs());
+//
+//    TODO forwardError must be multiplied with doActivationPrime(sum)
+//    TODO assert forwardError isFinite
 //}
 
 __host__ double Neuron::getForwardError() {
