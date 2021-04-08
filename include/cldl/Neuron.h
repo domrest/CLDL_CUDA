@@ -229,4 +229,5 @@ __device__ void device_calcMidError(Neuron *n);
 
 __global__ void gpu_multiplication(double value, double* output);
 
-__device__ void device_calcOutput(Neuron* n, int* threadHasReported);
+__device__ void device_calcOutput(Neuron* n);
+__device__ void device_calcOutputCont(Neuron* n, int* _layerHasReported);

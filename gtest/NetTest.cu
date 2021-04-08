@@ -34,8 +34,6 @@ TEST(NetTest, testNetConstructor) {
 
 //TODO testDestructor
 
-//TODO testInitNetwork
-
 TEST(NetTest, testNetSetLearningRate) {
     constexpr int nLayers = 5;
     int nNeurons[nLayers] = {5,4,3,2,1};
@@ -74,7 +72,49 @@ TEST(NetTest, testNetSetInputs) {
     ASSERT_EQ(n->getInput(5), 6);
 }
 
-//TODO testNetPropInputs
+TEST(NetTest, testNetPropInputs) {
+    constexpr int nLayers = 3;
+    int nNeurons[nLayers] = {3,2,1};
+    int* nNeuronsP = nNeurons;
+    constexpr int nInputs = 4;
+    double inputs[nInputs] = {4,3,2,1};
+    double weights[nInputs] = {1,2,3,4};
+    Net *net;
+    net = new Net(nLayers, nNeuronsP, nInputs);
+    net->initNetwork(Neuron::W_ZEROS, Neuron::B_NONE, Neuron::Act_Sigmoid);
+    net->setInputs(inputs);
+    net->setWeights(weights);
+
+    net->propInputs();
+
+    Layer *l;
+    l = net->getLayer(0);
+    Neuron *n;
+    n = l->getNeuron(0);
+    ASSERT_EQ(l->getnNeurons(),3);
+    ASSERT_EQ(n->getNInputs(), 4);
+    ASSERT_FLOAT_EQ(n->getOutput(), 0.04983399731);
+    n = l->getNeuron(1);
+    ASSERT_EQ(n->getNInputs(), 4);
+    ASSERT_FLOAT_EQ(n->getOutput(), 0.04983399731);
+    n = l->getNeuron(2);
+    ASSERT_EQ(n->getNInputs(), 4);
+    ASSERT_FLOAT_EQ(n->getOutput(), 0.04983399731);
+    n = l->getNeuron(3);
+    ASSERT_EQ(n->getNInputs(), 0);
+
+    l = net->getLayer(1);
+    n = l->getNeuron(0);
+    ASSERT_EQ(l->getnNeurons(),2);
+    ASSERT_EQ(n->getNInputs(), 3);
+    ASSERT_FLOAT_EQ(n->getOutput(), 0.07419901436);
+
+    l = net->getLayer(2);
+    n = l->getNeuron(0);
+    ASSERT_EQ(l->getnNeurons(),1);
+    ASSERT_EQ(n->getNInputs(), 2);
+    ASSERT_FLOAT_EQ(n->getOutput(), 0.05542061115);
+}
 
 TEST(NetTest, testNetSetBackwardError) {
     constexpr int nLayers = 5;
@@ -135,32 +175,43 @@ TEST(NetTest, testPropErrorBackward) {
     ASSERT_EQ(l4->getBackwardError(3),0.5625);
 }
 
-//TODO testNetUpdateWeights
-//Cant finish until propInputs and propErrorBackward are complete
 TEST(NetTest, testNetupdateWeights) {
-    constexpr int nLayers = 5;
-    int nNeurons[nLayers] = {5,4,3,2,1};
+    constexpr int nLayers = 3;
+    int nNeurons[nLayers] = {3,2,1};
     int* nNeuronsP = nNeurons;
-    constexpr int nInputs = 10;
-    double inputs[nInputs] = {1,2,3,4,5,6,7,8,9,10};
-    double* inputsp = inputs;
-
+    constexpr int nInputs = 4;
+    double inputs[nInputs] = {4,3,2,1};
     Net *net;
     net = new Net(nLayers, nNeuronsP, nInputs);
-    net->setInputs(inputsp);
+    net->initNetwork(Neuron::W_ONES, Neuron::B_NONE, Neuron::Act_Sigmoid);
     net->setLearningRate(0.1);
-    net->setBackwardError(0.1);
     net->setErrorCoeff(0,1,0,0,0,0);
+    net->setInputs(inputs);
+    net->propInputs();
+    net->setBackwardError(0.1);
+    net->propErrorBackward();
     net->updateWeights();
 
     Layer *l;
-    l = net->getLayer(4);
-
+    l = net->getLayer(0);
     Neuron *n;
     n = l->getNeuron(0);
-    //ASSERT_EQ(n->getWeight(0), 0.01);
-    //ASSERT_EQ(n->getWeight(1), 0.02);
-    //ASSERT_EQ(n->getWeight(2), 0.03);
+    ASSERT_FLOAT_EQ(n->getOutput(), 0.02497918748);
+    ASSERT_FLOAT_EQ(n->getBackwardError(), 0.0031117371);
+    ASSERT_FLOAT_EQ(n->getWeight(0), 1.001244695);
+    ASSERT_FLOAT_EQ(n->getWeight(1), 1.000933521);
+
+    l = net->getLayer(1);
+    n = l->getNeuron(0);
+    ASSERT_FLOAT_EQ(n->getOutput(), 0.018725628);
+    ASSERT_FLOAT_EQ(n->getBackwardError(), 0.006239045);
+    ASSERT_FLOAT_EQ(n->getWeight(0), 1.000015584);
+
+    l = net->getLayer(2);
+    n = l->getNeuron(0);
+    ASSERT_FLOAT_EQ(n->getOutput(), 0.009361719);
+    ASSERT_FLOAT_EQ(n->getBackwardError(), 0.02499123582);
+    ASSERT_FLOAT_EQ(n->getWeight(0), 1.0000467977);
 }
 
 TEST(NetTest, testNetSetErrorCoeff) {

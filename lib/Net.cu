@@ -50,12 +50,11 @@ __host__ Net::Net(int _nLayers, int* _nNeurons, int _nInputs) {
     delete[] errorGradient;
 }*/
 
-//TODO initNetwork
-/*__host__ void Net::initNetwork(Neuron::weightInitMethod _wim, Neuron::biasInitMethod _bim, Neuron::actMethod _am){
+__host__ void Net::initNetwork(Neuron::weightInitMethod _wim, Neuron::biasInitMethod _bim, Neuron::actMethod _am){
     for (int i=0; i<nLayers; i++){
         layers[i]->initLayer(i, _wim, _bim, _am);
     }
-}*/
+}
 
 __host__ void Net::setLearningRate(double _learningRate){
     learningRate=_learningRate;

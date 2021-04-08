@@ -69,8 +69,12 @@ __global__ void gpu_setBackwardError(Neuron*n, double _leadBackwardError) {
     device_setBackwardError(leadBackwardError, &n[i]);
 }
 
-__global__ void gpu_calcOutputs(Neuron* neurons, int* layerHasReported){
-    device_calcOutput(&neurons[blockDim.x], layerHasReported);
+__global__ void gpu_calcOutputsContinued(Neuron* neurons, int* layerHasReported){
+    device_calcOutputCont(&neurons[threadIdx.x], layerHasReported);
+}
+
+__global__ void gpu_calcOutputs(Neuron* neurons){
+    device_calcOutput(&neurons[blockIdx.x]);
 }
 
 __global__ void gpu_propErrorBackwards(Neuron *n, double* _sumList) {
@@ -94,10 +98,9 @@ __global__ void gpu_setErrorCoeff(Neuron *n, double _globalCoeff, double _backwa
 __global__ void gpu_updateWeights(Neuron *n, int nNeurons){
     int i = threadIdx.x;    //Input index
     int j = (blockIdx.x*blockDim.y) + threadIdx.y;  //Neuron index
-    double force = 1;
+    //double force = 1;
     if (j<nNeurons) {
-        n[j].weights[i] += (*n[j].learningRate) * n[j].inputs[i] * (*n[j].backwardError) * force;
-        //what is weightSum in neuron_old.cpp? Is it needed?
+        n[j].weights[i] += (*n[j].learningRate) * n[j].inputs[i] * (*n[j].backwardError); // * force;
     }
 }
 
@@ -138,12 +141,12 @@ __host__ Layer::~Layer(){
 //initialisation:
 //*************************************************************************************
 
-/*__host__ void Layer::initLayer(int _layerIndex, Neuron::weightInitMethod _wim, Neuron::biasInitMethod _bim, Neuron::actMethod _am){
+__host__ void Layer::initLayer(int _layerIndex, Neuron::weightInitMethod _wim, Neuron::biasInitMethod _bim, Neuron::actMethod _am){
     myLayerIndex = _layerIndex;
     for (int i=0; i<nNeurons; i++){
         neurons[i].initNeuron(i, myLayerIndex, _wim, _bim, _am);
     }
-}*/
+}
 
 __host__ void Layer::setlearningRate(double _learningRate){
     learningRate=_learningRate;
@@ -185,7 +188,10 @@ __host__ void Layer::calcOutputs(){
     gpu_allocateInt(&_layerHasReported, 0);
     cudaMemcpy(_layerHasReported, &layerHasReported, sizeof(int), cudaMemcpyHostToDevice);
 
-    gpu_calcOutputs<<<nNeurons, nInputs>>>(gpu_neurons, _layerHasReported);
+    gpu_calcOutputs<<<nNeurons, nInputs>>>(gpu_neurons);
+    cudaDeviceSynchronize();
+    gpu_calcOutputsContinued<<<1,nNeurons>>>(gpu_neurons, _layerHasReported);
+    cudaDeviceSynchronize();
 
     cudaMemcpy(&layerHasReported, _layerHasReported, sizeof(int), cudaMemcpyDeviceToHost);
 }

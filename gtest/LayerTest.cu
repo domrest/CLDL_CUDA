@@ -39,8 +39,6 @@ TEST(LayerTest, testLayerConstructor){
 
 //TODO testLayerDestructor
 
-//TODO testInitLayer
-
 TEST(LayerTest, testLayerSetLearningRate) {
     Layer *l;
     l = new Layer(10, 10);
@@ -72,7 +70,6 @@ TEST(LayerTest, testLayerSetInputs) {
     ASSERT_EQ(n2->getInput(2), 3.0);
 }
 
-//TODO testLayerPropInputs
 TEST(LayerTest, testLayerPropInputs) {
     Layer *l;
     l = new Layer(200, 10);
@@ -97,12 +94,42 @@ TEST(LayerTest, testLayerPropInputs) {
     ASSERT_EQ(n2->getInput(2), 3.0);
 }
 
-/*TEST(LayerTest, testLayerSetForwardError) {
+TEST(LayerTest, testLayerCalcOutputs) {
     Layer *l;
-    l = new Layer(10, 10);
-    l->setForwardError(0.1);
-    ASSERT_EQ(l->getForwardError(0), 0.1);
-}*/
+    int neuronNum = 3;
+    l = new Layer(neuronNum, 3);
+
+    double inputs[3] = {2.0, 2.0, 2.0};
+    double weights[3] = {3.0, 3.0, 3.0};
+
+    l->setInputs(inputs);
+    l->setWeights(weights);
+    Neuron *n;
+    n = l->getNeuron(0);
+    ASSERT_EQ(n->getInput(0), 2.0);
+    ASSERT_EQ(n->getWeight(0), 3.0);
+
+    l->calcOutputs();
+
+    //ASSERT_EQ(l->inputs[3], 4.0);
+    n = l->getNeuron(0);
+//    ASSERT_EQ(n->getInput(0), 2.0);
+    ASSERT_EQ(n->getNInputs(), 3);
+    ASSERT_DOUBLE_EQ(n->getSumOutput(), 0.18);
+    ASSERT_DOUBLE_EQ(n->getOutput(), 0.044878892373580115);
+
+
+    Neuron *n2;
+    n2 = l->getNeuron(1);
+    ASSERT_DOUBLE_EQ(n2->getSumOutput(), 0.18);
+    ASSERT_DOUBLE_EQ(n2->getOutput(), 0.044878892373580115);
+
+    Neuron *n3;
+    n3 = l->getNeuron(2);
+    ASSERT_DOUBLE_EQ(n3->getSumOutput(), 0.18);
+    ASSERT_DOUBLE_EQ(n3->getOutput(), 0.044878892373580115);
+
+}
 
 TEST(LayerTest, testLayerSetBackwardError) {
     Layer *l;
@@ -145,13 +172,22 @@ TEST(LayerTest, testLayerUpdateWeights) {
 
     Neuron *n;
     n = l->getNeuron(5);
-    ASSERT_EQ(n->getWeight(0), 1.0);
-    ASSERT_EQ(n->getWeight(1), 2.0);
-    /* This test doesn't pass if BackwardError
-       and LearningRate are set to 0.1.
-       It says:
-       "getWeight(0) = 0.0025."
-       "This does not equal 0.0025" */
+    ASSERT_FLOAT_EQ(n->getWeight(0), 1.0);
+    ASSERT_FLOAT_EQ(n->getWeight(1), 2.0);
+
+    Layer *l_2;
+    l_2 = new Layer(10, 10);
+    l_2->setBackwardError(0.1);
+    l_2->setlearningRate(0.1);
+    l_2->setErrorCoeff(0, 1, 0, 0, 0, 0);
+    double in_2[10] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
+    l_2->setInputs(in_2);
+    l_2->updateWeights();
+
+    Neuron *n_2;
+    n_2 = l_2->getNeuron(5);
+    ASSERT_FLOAT_EQ(n_2->getWeight(0), 0.0025);
+    ASSERT_FLOAT_EQ(n_2->getWeight(1), 0.005);
 }
 
 TEST(LayerTest, testLayerCalcErrorWeightProductSum) {
@@ -209,5 +245,3 @@ TEST(LayerTest, testLayerpropErrorBackwards) {
     ASSERT_EQ(l2->getBackwardError(1), 2.5);
     ASSERT_EQ(l2->getBackwardError(11), 15);
 }
-
-//TODO testLayerCalcOutputs
