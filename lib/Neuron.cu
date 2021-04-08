@@ -667,7 +667,3 @@ __device__ void device_dotProduct(double* list1, double* list2, double* _value, 
 __global__ void gpu_multiplication(double value, double* output){
     *output = value * *output;
 }
-
-__global__ void gpu_setRandomValuesInArray(double* array){
-
-}
