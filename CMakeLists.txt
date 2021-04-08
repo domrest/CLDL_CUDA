@@ -29,6 +29,8 @@ target_include_directories(CLDL
         PUBLIC
         include/)
 
+target_link_libraries(CLDL
+        curand)
 
 
 

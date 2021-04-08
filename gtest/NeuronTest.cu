@@ -272,3 +272,17 @@ TEST(NeuronTest, testPropErrorBackward){
 
 }
 
+TEST(NeuronTest, testNeuronInit){
+    Neuron* n = new Neuron(2);
+    Neuron* d_n;
+    cudaMalloc((void**) &d_n, sizeof(Neuron));
+    cudaMemcpy(d_n, n, sizeof(Neuron), cudaMemcpyHostToDevice);
+
+    n->initNeuron(0,0, Neuron::W_RANDOM, Neuron::B_NONE, Neuron::Act_NONE);
+    ASSERT_FALSE(n->getWeight(0) == n->getWeight(1));
+    ASSERT_TRUE(n->getWeight(0)<=1);
+    ASSERT_TRUE(n->getWeight(1)<=1);
+    ASSERT_TRUE(n->getWeight(0)>0);
+    ASSERT_TRUE(n->getWeight(1)>0);
+
+}

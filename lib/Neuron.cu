@@ -1,6 +1,8 @@
 #include "cldl/Neuron.h"
 
 #include <cuda_runtime.h>
+#include <cstdint>
+#include <iostream>
 
 
 
@@ -139,6 +141,12 @@ __host__ void Neuron::initNeuron(int _neuronIndex, int _layerIndex, weightInitMe
             gpu_setValuesInArray<<<1,getNInputs()>>>(1, weights);
             break;
         case W_RANDOM:
+            curandGenerator_t gen;
+            curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_DEFAULT);
+            curandSetPseudoRandomGeneratorSeed(gen, std::chrono::duration_cast<std::chrono::milliseconds>
+                    (std::chrono::system_clock::now().time_since_epoch()).count());
+
+            curandGenerateUniformDouble(gen, weights, getNInputs());
             //TODO set the random
 //            weights[i] = (((double) rand() / (RAND_MAX))); //* 2) -1;
             break;
@@ -658,4 +666,8 @@ __device__ void device_dotProduct(double* list1, double* list2, double* _value, 
 
 __global__ void gpu_multiplication(double value, double* output){
     *output = value * *output;
+}
+
+__global__ void gpu_setRandomValuesInArray(double* array){
+
 }
