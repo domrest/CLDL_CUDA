@@ -114,6 +114,8 @@ TEST(NetTest, testNetPropInputs) {
     ASSERT_EQ(l->getnNeurons(),1);
     ASSERT_EQ(n->getNInputs(), 2);
     ASSERT_FLOAT_EQ(n->getOutput(), 0.05542061115);
+
+    ASSERT_FLOAT_EQ(net->getOutput(0), 0.05542061115);
 }
 
 TEST(NetTest, testNetSetBackwardError) {

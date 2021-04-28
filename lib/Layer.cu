@@ -196,12 +196,16 @@ __host__ void Layer::calcOutputs(){
     cudaMemcpy(&layerHasReported, _layerHasReported, sizeof(int), cudaMemcpyDeviceToHost);
 }
 
-__host__ double* Layer::getOutput(){
+__host__ double* Layer::getOutputs(){
     double* _outputs;
     cudaMalloc(&_outputs, sizeof(double)*getnNeurons());
     gpu_getOutputs<<<1, getnNeurons()>>>(gpu_neurons, _outputs);
     return _outputs;
 //    return (neurons[_neuronIndex]->getOutput());
+}
+
+__host__ double Layer::getOutput(int _neuronIndex) {
+    return (neurons[_neuronIndex].getOutput());
 }
 
 //*************************************************************************************
