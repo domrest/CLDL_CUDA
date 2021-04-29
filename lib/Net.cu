@@ -42,13 +42,13 @@ __host__ Net::Net(int _nLayers, int* _nNeurons, int _nInputs) {
 }
 
 //TODO Destructor
-/*__host__ Net::~Net(){
+__host__ Net::~Net(){
     for (int i=0; i<nLayers; i++){
-        delete &layers[i];
+        delete layers[i];
     }
     delete[] layers;
     delete[] errorGradient;
-}*/
+}
 
 __host__ void Net::initNetwork(Neuron::weightInitMethod _wim, Neuron::biasInitMethod _bim, Neuron::actMethod _am){
     for (int i=0; i<nLayers; i++){
