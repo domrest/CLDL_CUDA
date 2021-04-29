@@ -35,31 +35,3 @@ target_include_directories(CLDL
 find_package(Threads)
 
 target_link_libraries(CLDL ${CMAKE_THREAD_LIBS_INIT})
-
-#cuda_add_library(CLDL_STATIC STATIC
-#        lib/Neuron.cu
-#        lib/Layer.cu
-#        lib/Net.cu)
-#
-#set_target_properties(
-#		CLDL_STATIC
-#		PROPERTIES
-#		CUDA_SEPARABLE_COMPILATION ON
-#		CUDA_RESOLVE_DEVICE_SYMBOLS ON
-#		POSITION_INDEPENDENT_CODE ON)
-#
-#target_include_directories(CLDL_STATIC
-#		PUBLIC
-#		include/)
-#
-#target_include_directories(CLDL_STATIC PRIVATE CLDL)
-#
-#set_target_properties(CLDL_STATIC PROPERTIES
-#  PUBLIC_HEADER "${PUBLICHEADERS}"
-#  PRIVATE_HEADER "${PRIVATEHEADERS}")
-
-#install(TARGETS CLDL_STATIC
-#  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-#  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-#  PRIVATE_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cldl_cuda)
