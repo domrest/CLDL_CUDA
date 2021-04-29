@@ -130,7 +130,8 @@ __host__ Layer::Layer(int _nNeurons, int _nInputs){
 
 __host__ Layer::~Layer(){
     for(int i=0;i<nNeurons;i++) {
-        delete &neurons[i];
+        Neuron j = neurons[i];
+        j.~Neuron();
     }
     free(neurons);
     cudaFree(gpu_inputs);
