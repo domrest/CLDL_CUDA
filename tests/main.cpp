@@ -7,17 +7,17 @@
 using namespace std;
 
 
-int* testNet(int layerCount, int nInputs) {
+int* testNet(int layerCount, int nNeurons) {
     int iterations = 2;
     Net *net;
 
     int *nNeuronsP = new int[layerCount];
-    double *inputsp = new double[nInputs];
+    double *inputsp = new double[nNeurons];
 
     for (int i = 0; i < layerCount; i++) {
-        nNeuronsP[i] = layerCount - i;
+        nNeuronsP[i] = nNeurons;
     }
-    for (int i = 0; i < nInputs; i++) {
+    for (int i = 0; i < nNeurons; i++) {
         inputsp[i] = 1.0;
     }
     double leadError = 1;
@@ -26,7 +26,7 @@ int* testNet(int layerCount, int nInputs) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
     // init time
-    net = new Net(layerCount, nNeuronsP, nInputs);
+    net = new Net(layerCount, nNeuronsP, nNeurons);
     net->initNetwork(Neuron::W_ONES, Neuron::B_NONE, Neuron::Act_Sigmoid);
     net->setLearningRate(learningRate);
     net->setErrorCoeff(0, 1, 0, 0, 0, 0);
@@ -61,8 +61,8 @@ int main()
     ofstream file2;
     file1.open("C:\\Users\\domre\\CLionProjects\\CLDL_CUDA\\output1.csv", ios::trunc);
     file2.open("C:\\Users\\domre\\CLionProjects\\CLDL_CUDA\\ouptut2.csv", ios::trunc);
-    for (int layers = 2; layers<50; layers++){
-        for (int nNeurons = 2; nNeurons<50; nNeurons++){
+    for (int layers = 2; layers<100; layers++){
+        for (int nNeurons = 2; nNeurons<100; nNeurons++){
 
             std::cout << "Layer count = " << layers << " input count = "<< nNeurons;
             std::cout << endl;
