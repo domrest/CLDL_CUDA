@@ -35,4 +35,4 @@ target_include_directories(CLDL
 
 find_package(Threads)
 
-target_link_libraries(CLDL ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(CLDL curand ${CMAKE_THREAD_LIBS_INIT})
