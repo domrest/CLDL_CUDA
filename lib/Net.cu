@@ -42,13 +42,13 @@ __host__ Net::Net(int _nLayers, int* _nNeurons, int _nInputs) {
 }
 
 //TODO Destructor
-/*__host__ Net::~Net(){
+__host__ Net::~Net(){
     for (int i=0; i<nLayers; i++){
-        delete &layers[i];
+        delete layers[i];
     }
     delete[] layers;
     delete[] errorGradient;
-}*/
+}
 
 __host__ void Net::initNetwork(Neuron::weightInitMethod _wim, Neuron::biasInitMethod _bim, Neuron::actMethod _am){
     for (int i=0; i<nLayers; i++){
@@ -75,7 +75,7 @@ __host__ void Net::setInputs(double* _inputs){
 __host__ void Net::propInputs() {
     for (int i=0;i<nLayers-1; i++) {
         layers[i]->calcOutputs();
-        double* layerOutputs = layers[i]->getOutput();
+        double* layerOutputs = layers[i]->getOutputs();
         layers[i+1]->propInputs(layerOutputs);
     }
     layers[nLayers-1]->calcOutputs();
@@ -153,4 +153,8 @@ __host__ int Net::getnOutputs(){
 Layer* Net::getLayer(int _layerIndex){
     assert(_layerIndex<nLayers);
     return (layers[_layerIndex]);
+}
+
+__host__ double Net::getOutput(int _neuronIndex) {
+    return layers[nLayers-1]->getOutput(_neuronIndex);
 }

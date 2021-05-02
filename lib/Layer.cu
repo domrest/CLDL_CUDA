@@ -130,7 +130,8 @@ __host__ Layer::Layer(int _nNeurons, int _nInputs){
 
 __host__ Layer::~Layer(){
     for(int i=0;i<nNeurons;i++) {
-        delete &neurons[i];
+        Neuron j = neurons[i];
+        j.~Neuron();
     }
     free(neurons);
     cudaFree(gpu_inputs);
@@ -196,12 +197,16 @@ __host__ void Layer::calcOutputs(){
     cudaMemcpy(&layerHasReported, _layerHasReported, sizeof(int), cudaMemcpyDeviceToHost);
 }
 
-__host__ double* Layer::getOutput(){
+__host__ double* Layer::getOutputs(){
     double* _outputs;
     cudaMalloc(&_outputs, sizeof(double)*getnNeurons());
     gpu_getOutputs<<<1, getnNeurons()>>>(gpu_neurons, _outputs);
     return _outputs;
 //    return (neurons[_neuronIndex]->getOutput());
+}
+
+__host__ double Layer::getOutput(int _neuronIndex) {
+    return (neurons[_neuronIndex].getOutput());
 }
 
 //*************************************************************************************

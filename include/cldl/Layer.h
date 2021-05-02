@@ -262,7 +262,9 @@ public:
      * @param _neuronIndex The index of the neuron
      * @return the activation of that neuron
      */
-    __host__ double* getOutput();
+    __host__ double* getOutputs();
+
+    __host__ double getOutput(int _neuronIndex);
 
     __host__ double getErrorWeightProductSum(int index);
 

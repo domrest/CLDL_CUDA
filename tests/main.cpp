@@ -5,8 +5,8 @@
 void testNet() {
     int iterations = 2;
     Net *net;
-    constexpr int nLayers = 2;
-    int nNeurons[nLayers] = {2,1};
+    constexpr int nLayers = 5;
+    int nNeurons[nLayers] = {5,20,7,3,2};
     int* nNeuronsP = nNeurons;
     constexpr int nInputs = 3;
     double inputs[nInputs] = {1,1,1};
@@ -24,19 +24,19 @@ void testNet() {
         net->setInputs(inputsp);
         net->propInputs();
         cout << " INSPECT FORWARD PROPAGATION: ****************************************************" << endl;
-        net->printNetwork();
+//        net->printNetwork();
         net->setBackwardError(leadError);
         net->propErrorBackward();
         cout << " INSPECT BACK PROPAGATION: ****************************************************" << endl;
-        net->printNetwork();
+//        net->printNetwork();
         net->updateWeights();
         cout << " INSPECT LEARNING: ****************************************************" << endl;
-        net->printNetwork();
-        net->saveWeights();
+//        net->printNetwork();
+//        net->saveWeights();
     }
-    net->snapWeights();
+//    net->snapWeights();
 
-    delete net;
+   // delete net;
 }
 
 int main()
