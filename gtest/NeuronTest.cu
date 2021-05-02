@@ -280,6 +280,8 @@ TEST(NeuronTest, testNeuronInit){
 
     n->initNeuron(0,0, Neuron::W_RANDOM, Neuron::B_NONE, Neuron::Act_NONE);
     ASSERT_FALSE(n->getWeight(0) == n->getWeight(1));
+    printf("%f\n", n->getWeight(0));
+    printf("%f\n", n->getWeight(1));
     ASSERT_TRUE(n->getWeight(0)<=1);
     ASSERT_TRUE(n->getWeight(1)<=1);
     ASSERT_TRUE(n->getWeight(0)>0);
