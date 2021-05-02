@@ -158,3 +158,21 @@ Layer* Net::getLayer(int _layerIndex){
 __host__ double Net::getOutput(int _neuronIndex) {
     return layers[nLayers-1]->getOutput(_neuronIndex);
 }
+
+__host__ void Net::printInitialWeights() {
+    FILE* initweights = nullptr;
+    initweights = fopen("initial_weights.tsv", "wt");
+    for (int i=0; i<nLayers;i++) {
+        layers[i]->printWeights(initweights);
+    }
+    fclose(initweights);
+}
+
+__host__ void Net::printWeights() {
+    FILE* weights = nullptr;
+    weights = fopen("updated_weights.tsv", "wt");
+    for (int i=0; i<nLayers;i++) {
+        layers[i]->printWeights(weights);
+    }
+    fclose(weights);
+}

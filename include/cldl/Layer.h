@@ -315,6 +315,8 @@ public:
      */
     __host__ void saveWeights();
 
+    __host__ void printWeights(FILE*);
+
     /**
      * Snaps the final distribution of weights in a specific layer,
      * this is overwritten every time the function is called

@@ -186,6 +186,7 @@ TEST(NetTest, testNetupdateWeights) {
     Net *net;
     net = new Net(nLayers, nNeuronsP, nInputs);
     net->initNetwork(Neuron::W_ONES, Neuron::B_NONE, Neuron::Act_Sigmoid);
+    net->printInitialWeights();
     net->setLearningRate(0.1);
     net->setErrorCoeff(0,1,0,0,0,0);
     net->setInputs(inputs);
@@ -193,6 +194,7 @@ TEST(NetTest, testNetupdateWeights) {
     net->setBackwardError(0.1);
     net->propErrorBackward();
     net->updateWeights();
+    net->printWeights();
 
     Layer *l;
     l = net->getLayer(0);
@@ -233,4 +235,35 @@ TEST(NetTest, testNetSetErrorCoeff) {
     n = l->getNeuron(0);
 
     ASSERT_EQ(n->getBackwardsCoeff(), 1.0);
+}
+
+TEST(NetTest, testNetInitNetwork) {
+    constexpr int nLayers = 2;
+    int nNeurons[nLayers] = {2, 3};
+    constexpr int nInputs = 3;
+
+    Net *net;
+    net = new Net(2, nNeurons, nInputs);
+    net->initNetwork(Neuron::W_RANDOM, Neuron::B_NONE, Neuron::Act_Sigmoid);
+
+    Layer *l1;
+    l1 = net->getLayer(0);
+
+    Neuron *n1;
+    n1 = l1->getNeuron(0);
+    Neuron *n2;
+    n2 = l1->getNeuron(1);
+
+    Layer *l2;
+    l2 = net->getLayer(1);
+    Neuron *n3;
+    n3 = l2->getNeuron(0);
+    Neuron *n4;
+    n4 = l2->getNeuron(1);
+    Neuron *n5;
+    n5 = l2->getNeuron(2);
+
+    net->printInitialWeights();
+
+    ASSERT_FALSE(n1->getWeight(0) == n2->getWeight(0) == n3->getWeight(0) == n4->getWeight(0) == n5->getWeight(0));
 }

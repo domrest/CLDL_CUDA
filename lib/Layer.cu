@@ -325,3 +325,12 @@ __host__ int Layer::getnNeurons(){
     return (nNeurons);
 }
 
+__host__ void Layer::printWeights(FILE* weights) {
+    for (int i=0;i<nNeurons;i++) {
+        for (int j=0;j<nInputs;j++) {
+            fprintf(weights,"%f, ", neurons[i].getWeight(j));
+        }
+        fprintf(weights,"\n");
+    }
+    fprintf(weights,"\n");
+}
