@@ -23,8 +23,9 @@ set_target_properties(
         POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(CLDL
-		PUBLIC
-		include/)
+        PUBLIC
+        include/)
+
 
 #install(TARGETS CLDL
 #LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

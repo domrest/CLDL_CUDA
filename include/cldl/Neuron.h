@@ -2,6 +2,8 @@
 
 #include <assert.h>
 #include <cuda_runtime.h>
+#include <curand.h>
+#include <chrono>
 
 using namespace std;
 
