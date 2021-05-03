@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 project(CLDL LANGUAGES CUDA CXX)
 
-add_subdirectory(tests)
 add_subdirectory(gtest)
 
 # packages

@@ -188,7 +188,7 @@ __host__ void Layer::calcOutputs(){
     gpu_allocateInt(&_layerHasReported, 0);
     cudaMemcpy(_layerHasReported, &layerHasReported, sizeof(int), cudaMemcpyHostToDevice);
 
-    gpu_calcOutputs<<<nNeurons, nInputs>>>(gpu_neurons);
+    gpu_calcOutputs<<<nNeurons, 1>>>(gpu_neurons);
     cudaDeviceSynchronize();
     gpu_calcOutputsContinued<<<1,nNeurons>>>(gpu_neurons, _layerHasReported);
     cudaDeviceSynchronize();
@@ -284,6 +284,7 @@ __host__ void Layer::updateWeights() {
     int blockSize = nInputs * blockYDim;        // Size of required block
     int B = std::ceil(float(nThreads)/blockSize);   // Total number of blocks required
     dim3 T = dim3(nInputs, blockYDim);          // 2D block dimensions
+
     gpu_updateWeights<<<B,T>>>(gpu_neurons, nNeurons);
     cudaDeviceSynchronize();
 }

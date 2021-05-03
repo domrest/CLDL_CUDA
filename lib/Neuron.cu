@@ -639,26 +639,26 @@ __global__ void gpu_dotProduct(double* list1, double* list2, double* _value, dou
 }
 
 __device__ void device_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength){
-    int idx = threadIdx.x;
-    int stride = 1;
+//    int idx = threadIdx.x;
+//    int stride = 1;
 
     double target = 0.0;
-    for (int i = idx; i < arrayLength; i+=stride){
+    for (int i = 0; i < arrayLength; i+=1){
         target += list1[i]*list2[i];
     }
-
-    _value[idx] = target;
-    __syncthreads();
-
-    for (int size = stride/2; size>0; size/=2){
-        if (idx < size){
-            _value[idx] += _value[idx+size];
-        }
-        __syncthreads();
-    }
-    if (idx == 0){
-        *_target = _value[0];
-    }
+    *_target = target;
+//    _value[idx] = target;
+//    __syncthreads();
+//
+//    for (int size = stride/2; size>0; size/=2){
+//        if (idx < size){
+//            _value[idx] += _value[idx+size];
+//        }
+//        __syncthreads();
+//    }
+//    if (idx == 0){
+//        *_target = _value[0];
+//    }
 }
 
 __global__ void gpu_multiplication(double value, double* output){

@@ -81,11 +81,13 @@ TEST(NetTest, testNetPropInputs) {
     double weights[nInputs] = {1,2,3,4};
     Net *net;
     net = new Net(nLayers, nNeuronsP, nInputs);
-    net->initNetwork(Neuron::W_ZEROS, Neuron::B_NONE, Neuron::Act_Sigmoid);
+    net->initNetwork(Neuron::W_RANDOM, Neuron::B_NONE, Neuron::Act_Sigmoid);
     net->setInputs(inputs);
     net->setWeights(weights);
 
     net->propInputs();
+
+    net->printWeights();
 
     Layer *l;
     l = net->getLayer(0);
