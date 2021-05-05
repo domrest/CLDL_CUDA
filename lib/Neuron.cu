@@ -217,7 +217,7 @@ __host__ void Neuron::propInputs(int _index,  double _value){
 
 
 __device__ void device_calcOutput(Neuron* n){
-    double* _value = new double[1024];
+    __shared__ double _value[1024];
     int nInputs = *(n->nInputs);
     device_dotProduct((*n).inputs, (*n).weights, _value, (*n).sum, nInputs);
 }
@@ -281,7 +281,7 @@ __host__ void Neuron::propErrorForward(int _index, double _value){
 
 //TODO calcForwardError
 __device__ void calcForwardError(Neuron* n){
-    double* _value = new double[1024];
+    __shared__ double _value[1024];
     device_dotProduct((*n).inputErrors,(*n).weights,_value, (*n).calcForwardOutput,*(*n).nInputs);
     device_doActivationPrime((*n).forwardError, (*n).sum, (*n).actMet);
     *(*n).forwardError = *(*n).forwardError * *(*n).calcForwardOutput;
@@ -639,26 +639,26 @@ __global__ void gpu_dotProduct(double* list1, double* list2, double* _value, dou
 }
 
 __device__ void device_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength){
-//    int idx = threadIdx.x;
-//    int stride = 1;
+    int idx = threadIdx.x;
+    int stride = 1;
 
     double target = 0.0;
     for (int i = 0; i < arrayLength; i+=1){
         target += list1[i]*list2[i];
     }
     *_target = target;
-//    _value[idx] = target;
-//    __syncthreads();
-//
-//    for (int size = stride/2; size>0; size/=2){
-//        if (idx < size){
-//            _value[idx] += _value[idx+size];
-//        }
-//        __syncthreads();
-//    }
-//    if (idx == 0){
-//        *_target = _value[0];
-//    }
+    _value[idx] = target;
+    __syncthreads();
+
+    for (int size = stride/2; size>0; size/=2){
+        if (idx < size){
+            _value[idx] += _value[idx+size];
+        }
+        __syncthreads();
+    }
+    if (idx == 0){
+        *_target = _value[0];
+    }
 }
 
 __global__ void gpu_multiplication(double value, double* output){

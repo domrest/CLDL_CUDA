@@ -110,6 +110,7 @@ TEST(NetTest, testNetPropInputs) {
     ASSERT_EQ(l->getnNeurons(),2);
     ASSERT_EQ(n->getNInputs(), 3);
     ASSERT_FLOAT_EQ(n->getOutput(), 0.07419901436);
+    ASSERT_FLOAT_EQ(n->getWeight(0), 1);
 
     l = net->getLayer(2);
     n = l->getNeuron(0);
