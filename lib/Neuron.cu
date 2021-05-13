@@ -223,16 +223,18 @@ __device__ void device_calcOutput(Neuron* n){
 }
 
 __device__ void device_calcOutputCont(Neuron* n, int* _layerHasReported){
-    if (*(*n).myLayerIndex == 0){
-        *(*n).sum = *(*n).sum * 0.01;
+    if (threadIdx.x == 0) {
+        if (*(*n).myLayerIndex == 0){
+            *(*n).sum = *(*n).sum * 0.01;
+        }
+        *(*n).sum += *(*n).bias;
+        device_doActivation((*n).output, (*n).sum, (*n).actMet);
+        *(*n).iHaveReported = *_layerHasReported;
+        if (*(*n).output > 0.49 && *(*n).iHaveReported == 0){
+            *(*n).iHaveReported = 1;
+        }
+        *_layerHasReported = *(*n).iHaveReported;
     }
-    *(*n).sum += *(*n).bias;
-    device_doActivation((*n).output, (*n).sum, (*n).actMet);
-    *(*n).iHaveReported = *_layerHasReported;
-    if (*(*n).output > 0.49 && *(*n).iHaveReported == 0){
-        *(*n).iHaveReported = 1;
-    }
-    *_layerHasReported = *(*n).iHaveReported;
 }
 
 //int Neuron::calcOutput(int _layerHasReported){
