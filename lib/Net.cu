@@ -41,7 +41,6 @@ __host__ Net::Net(int _nLayers, int* _nNeurons, int _nInputs) {
     errorGradient= new double[nLayers];
 }
 
-//TODO Destructor
 __host__ Net::~Net(){
     for (int i=0; i<nLayers; i++){
         delete layers[i];
