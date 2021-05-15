@@ -22,9 +22,10 @@
 
 // GPU FUNCTIONS //
 
-__global__ void gpu_setLearningRate(Neuron* n, double _learningRate) {
-    int i = threadIdx.x;
-    device_setLearningRate(&n[i], _learningRate);
+__global__ void gpu_setLearningRate(Neuron* n, double _learningRate, int nNeurons) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i<nNeurons)
+        device_setLearningRate(&n[i], _learningRate);
 }
 
 __global__ void gpu_setInputs(Neuron* n, double *list, int nNeurons) {
@@ -63,10 +64,11 @@ __global__ void gpu_calcErrorWeightProductSum(Neuron* n, int nNeurons, int nInpu
     *n[i].forwardError = _leadForwardError;
 }*/
 
-__global__ void gpu_setBackwardError(Neuron*n, double _leadBackwardError) {
-    int i = threadIdx.x;
+__global__ void gpu_setBackwardError(Neuron*n, double _leadBackwardError, int nNeurons) {
     double leadBackwardError = _leadBackwardError;
-    device_setBackwardError(leadBackwardError, &n[i]);
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i<nNeurons)
+        device_setBackwardError(leadBackwardError, &n[i]);
 }
 
 __global__ void gpu_calcOutputs(Neuron* neurons, int* layerHasReported){
@@ -76,22 +78,25 @@ __global__ void gpu_calcOutputs(Neuron* neurons, int* layerHasReported){
     __syncthreads();
 }
 
-__global__ void gpu_propErrorBackwards(Neuron *n, double* _sumList) {
-    int i = threadIdx.x;
+__global__ void gpu_propErrorBackwards(Neuron *n, double* _sumList, int nNeurons) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
     double* sumList = _sumList;
-    device_propErrorBackward(sumList[i], &n[i]);
+    if (i<nNeurons)
+        device_propErrorBackward(sumList[i], &n[i]);
 }
 
 __global__ void gpu_setErrorCoeff(Neuron *n, double _globalCoeff, double _backwardsCoeff,
                                   double _midCoeff, double _forwardCoeff,
-                                 double _localCoeff, double _echoCoeff) {
-    int i = threadIdx.x;
-    *n[i].backwardsCoeff = _backwardsCoeff;
-    *n[i].midCoeff = _midCoeff;
-    *n[i].forwardCoeff =_forwardCoeff;
-    *n[i].globalCoeff = _globalCoeff;
-    *n[i].localCoeff = _localCoeff;
-    *n[i].echoCoeff= _echoCoeff;
+                                 double _localCoeff, double _echoCoeff, int nNeurons) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i<nNeurons) {
+        *n[i].backwardsCoeff = _backwardsCoeff;
+        *n[i].midCoeff = _midCoeff;
+        *n[i].forwardCoeff = _forwardCoeff;
+        *n[i].globalCoeff = _globalCoeff;
+        *n[i].localCoeff = _localCoeff;
+        *n[i].echoCoeff = _echoCoeff;
+    }
 }
 
 __global__ void gpu_updateWeights(Neuron *n, int nNeurons){
@@ -103,9 +108,11 @@ __global__ void gpu_updateWeights(Neuron *n, int nNeurons){
     }
 }
 
-__global__ void gpu_getOutputs(Neuron* n, double* _outputs){
-    int x = threadIdx.x;
-    _outputs[x] = *n[x].output;
+__global__ void gpu_getOutputs(Neuron* n, double* _outputs, int nNeurons){
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i<nNeurons) {
+        _outputs[i] = *n[i].output;
+    }
 }
 
 // HOST FUNCTIONS //
@@ -148,8 +155,14 @@ __host__ void Layer::initLayer(int _layerIndex, Neuron::weightInitMethod _wim, N
 }
 
 __host__ void Layer::setlearningRate(double _learningRate){
+    int B = std::ceil(float(nNeurons)/MAX_BLOCKSIZE);   // Total number of blocks required
+    int T = MAX_BLOCKSIZE;
+    if (nNeurons<MAX_BLOCKSIZE){
+        T = nNeurons;
+    }
+    //printf("%d, %d\n", B, T);
     learningRate=_learningRate;
-    gpu_setLearningRate<<<1,nNeurons>>>(gpu_neurons, learningRate);
+    gpu_setLearningRate<<<B,T>>>(gpu_neurons, learningRate, nNeurons);
     cudaDeviceSynchronize();
 }
 
@@ -193,17 +206,6 @@ __host__ void Layer::calcOutputs(){
     cudaMemcpy(&layerHasReported, _layerHasReported, sizeof(int), cudaMemcpyDeviceToHost);
 }
 
-__host__ double* Layer::getOutputs(){
-    double* _outputs;
-    cudaMalloc(&_outputs, sizeof(double)*getnNeurons());
-    gpu_getOutputs<<<1, getnNeurons()>>>(gpu_neurons, _outputs);
-    return _outputs;
-}
-
-__host__ double Layer::getOutput(int _neuronIndex) {
-    return (neurons[_neuronIndex].getOutput());
-}
-
 //*************************************************************************************
 //forward propagation of error:
 //*************************************************************************************
@@ -231,7 +233,13 @@ __host__ double Layer::getOutput(int _neuronIndex) {
 
 __host__ void Layer::setBackwardError(double _leadBackwardError) {
     leadBackwardError = _leadBackwardError;
-    gpu_setBackwardError<<<1,nNeurons>>>(gpu_neurons, leadBackwardError);
+    int B = std::ceil(float(nNeurons)/MAX_BLOCKSIZE);   // Total number of blocks required
+    int T = MAX_BLOCKSIZE;
+    if (nNeurons<MAX_BLOCKSIZE){
+        T = nNeurons;
+    }
+    //printf("%d, %d\n", B, T);
+    gpu_setBackwardError<<<B,T>>>(gpu_neurons, leadBackwardError, nNeurons);
     cudaDeviceSynchronize();
 }
 
@@ -247,20 +255,15 @@ __host__ double* Layer::calcErrorWeightProductSum() {
     return gpu_sumlist;
 }
 
-__host__ double Layer::getErrorWeightProductSum(int index) {
-    double _sum = 0.0;
-    double* sum = gpu_sumlist + index;
-    cudaMemcpy(&_sum, sum, sizeof(double), cudaMemcpyDeviceToHost);
-    return _sum;
-}
-
 __host__ void Layer::propErrorBackward(double* _sumList) {
-    gpu_propErrorBackwards<<<1,nNeurons>>>(gpu_neurons, _sumList);
+    int B = std::ceil(float(nNeurons)/MAX_BLOCKSIZE);   // Total number of blocks required
+    int T = MAX_BLOCKSIZE;
+    if (nNeurons<MAX_BLOCKSIZE){
+        T = nNeurons;
+    }
+    //printf("%d, %d\n", B, T);
+    gpu_propErrorBackwards<<<B,T>>>(gpu_neurons, _sumList, nNeurons);
     cudaDeviceSynchronize();
-}
-
-__host__ double Layer::getBackwardError(int _neuronIndex){
-    return (neurons[_neuronIndex].getBackwardError());
 }
 
 //*************************************************************************************
@@ -270,8 +273,13 @@ __host__ double Layer::getBackwardError(int _neuronIndex){
 __host__ void Layer::setErrorCoeff(double _globalCoeff, double _backwardsCoeff,
                             double _midCoeff, double _forwardCoeff,
                             double _localCoeff, double  _echoCoeff) {
-    gpu_setErrorCoeff<<<1,nNeurons>>>(gpu_neurons, _globalCoeff, _backwardsCoeff,
-                                      _midCoeff, _forwardCoeff, _localCoeff, _echoCoeff);
+    int B = std::ceil(float(nNeurons)/MAX_BLOCKSIZE);   // Total number of blocks required
+    int T = MAX_BLOCKSIZE;
+    if (nNeurons<MAX_BLOCKSIZE){
+        T = nNeurons;
+    }
+    gpu_setErrorCoeff<<<B,T>>>(gpu_neurons, _globalCoeff, _backwardsCoeff,
+                                      _midCoeff, _forwardCoeff, _localCoeff, _echoCoeff, nNeurons);
     cudaDeviceSynchronize();
 }
 
@@ -309,18 +317,35 @@ __host__ Neuron* Layer::getNeuron(int _neuronIndex){
     return (neurons[_neuronIndex].getGlobalError());
 }*/
 
-//TODO getSumOutput
-
-//TODO getWeights
-
-//TODO getInitWeight
-
-//TODO getWeightChange
-
-//TODO getWeightDistance
-
 __host__ int Layer::getnNeurons(){
     return (nNeurons);
+}
+
+__host__ double* Layer::getOutputs(){
+    double* _outputs;
+    cudaMalloc(&_outputs, sizeof(double)*nNeurons);
+    int B = std::ceil(float(nNeurons)/MAX_BLOCKSIZE);   // Total number of blocks required
+    int T = MAX_BLOCKSIZE;
+    if (nNeurons<MAX_BLOCKSIZE){
+        T = nNeurons;
+    }
+    gpu_getOutputs<<<B,T>>>(gpu_neurons, _outputs, nNeurons);
+    return _outputs;
+}
+
+__host__ double Layer::getOutput(int _neuronIndex) {
+    return (neurons[_neuronIndex].getOutput());
+}
+
+__host__ double Layer::getErrorWeightProductSum(int index) {
+    double _sum = 0.0;
+    double* sum = gpu_sumlist + index;
+    cudaMemcpy(&_sum, sum, sizeof(double), cudaMemcpyDeviceToHost);
+    return _sum;
+}
+
+__host__ double Layer::getBackwardError(int _neuronIndex){
+    return (neurons[_neuronIndex].getBackwardError());
 }
 
 __host__ void Layer::printWeights(FILE* weights) {
