@@ -19,7 +19,7 @@
 #include "Layer.h"
 
 /** Net is the main class used to set up a neural network used for
- * closed-loop Deep Learning. It initialises all the layers and the
+ * Closed-Loop Deep Learning. It initialises all the layers and the
  * neurons internally.
  *
  * (C) 2019,2020, Bernd Porr <bernd@glasgowneuro.tech>

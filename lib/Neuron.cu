@@ -131,7 +131,6 @@ __host__ Neuron::~Neuron(){
 //initialisation:
 //*************************************************************************************
 
-//TODO test init neuron
 __host__ void Neuron::initNeuron(int _neuronIndex, int _layerIndex, weightInitMethod _wim, biasInitMethod _bim, actMethod _am){
     cudaMemcpy(myLayerIndex, &_layerIndex, sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(myNeuronIndex, &_neuronIndex, sizeof(int), cudaMemcpyHostToDevice);
@@ -198,6 +197,7 @@ __host__ double Neuron::getLearningRate() {
 //*************************************************************************************
 //forward propagation of inputs:
 //*************************************************************************************
+
 __host__ void Neuron::setInput(int _index, double _value) {
     assert((_index>=0)&&(_index<getNInputs()));
     gpu_setValueInArray<<<1,1>>>(_value, _index, inputs);
@@ -219,22 +219,24 @@ __host__ void Neuron::propInputs(int _index,  double _value){
 
 
 __device__ void device_calcOutput(Neuron* n){
-    double* _value = new double[1024];
+    __shared__ double _value[1024];
     int nInputs = *(n->nInputs);
     device_dotProduct((*n).inputs, (*n).weights, _value, (*n).sum, nInputs);
 }
 
 __device__ void device_calcOutputCont(Neuron* n, int* _layerHasReported){
-    if (*(*n).myLayerIndex == 0){
-        *(*n).sum = *(*n).sum * 0.01;
+    if (threadIdx.x == 0) {
+        if (*(*n).myLayerIndex == 0){
+            *(*n).sum = *(*n).sum * 0.01;
+        }
+        *(*n).sum += *(*n).bias;
+        device_doActivation((*n).output, (*n).sum, (*n).actMet);
+        *(*n).iHaveReported = *_layerHasReported;
+        if (*(*n).output > 0.49 && *(*n).iHaveReported == 0){
+            *(*n).iHaveReported = 1;
+        }
+        *_layerHasReported = *(*n).iHaveReported;
     }
-    *(*n).sum += *(*n).bias;
-    device_doActivation((*n).output, (*n).sum, (*n).actMet);
-    *(*n).iHaveReported = *_layerHasReported;
-    if (*(*n).output > 0.49 && *(*n).iHaveReported == 0){
-        *(*n).iHaveReported = 1;
-    }
-    *_layerHasReported = *(*n).iHaveReported;
 }
 
 //int Neuron::calcOutput(int _layerHasReported){
@@ -282,7 +284,7 @@ __host__ void Neuron::propErrorForward(int _index, double _value){
 
 
 __device__ void device_calcForwardError(Neuron* n){
-    double* _value = new double[1024];
+    __shared__ double _value[1024];
     int nInputs = *(n->nInputs);
     device_dotProduct((*n).inputErrors,(*n).weights, _value, (*n).calcForwardOutput, nInputs);
     device_doActivationPrime((*n).forwardError, (*n).sum, (*n).actMet);
@@ -645,26 +647,26 @@ __global__ void gpu_dotProduct(double* list1, double* list2, double* _value, dou
 }
 
 __device__ void device_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength){
-//    int idx = threadIdx.x;
-//    int stride = 1;
+    int idx = threadIdx.x;
+    int stride = 1;
 
     double target = 0.0;
     for (int i = 0; i < arrayLength; i+=1){
         target += list1[i]*list2[i];
     }
     *_target = target;
-//    _value[idx] = target;
-//    __syncthreads();
-//
-//    for (int size = stride/2; size>0; size/=2){
-//        if (idx < size){
-//            _value[idx] += _value[idx+size];
-//        }
-//        __syncthreads();
-//    }
-//    if (idx == 0){
-//        *_target = _value[0];
-//    }
+    _value[idx] = target;
+    __syncthreads();
+
+    for (int size = stride/2; size>0; size/=2){
+        if (idx < size){
+            _value[idx] += _value[idx+size];
+        }
+        __syncthreads();
+    }
+    if (idx == 0){
+        *_target = _value[0];
+    }
 }
 
 __global__ void gpu_multiplication(double value, double* output){

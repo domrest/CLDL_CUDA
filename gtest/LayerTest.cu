@@ -37,15 +37,13 @@ TEST(LayerTest, testLayerConstructor){
     ASSERT_EQ(n->getNInputs(), 10);
 }
 
-//TODO testLayerDestructor
-
 TEST(LayerTest, testLayerSetLearningRate) {
     Layer *l;
-    l = new Layer(10, 10);
+    l = new Layer(1030, 10);
     l->setlearningRate(0.1);
 
     Neuron *n;
-    n = l->getNeuron(0);
+    n = l->getNeuron(1028);
     ASSERT_EQ(n->getLearningRate(), 0.1);
 }
 
@@ -133,19 +131,19 @@ TEST(LayerTest, testLayerCalcOutputs) {
 
 TEST(LayerTest, testLayerSetBackwardError) {
     Layer *l;
-    l = new Layer(10, 10);
+    l = new Layer(1030, 10);
     l->setBackwardError(0.01);
     ASSERT_EQ(l->leadBackwardError, 0.01);
-    ASSERT_EQ(l->getBackwardError(5), 0.0025);
+    ASSERT_EQ(l->getBackwardError(1028), 0.0025);
 }
 
 TEST(LayerTest, testLayerSetErrorCoeff) {
     Layer *l;
-    l = new Layer(10, 10);
+    l = new Layer(1030, 10);
     l->setErrorCoeff(0, 1, 0, 0, 0, 0);
 
     Neuron *n;
-    n = l->getNeuron(5);
+    n = l->getNeuron(1028);
     ASSERT_EQ(n->getBackwardsCoeff(), 1.0);
 }
 
