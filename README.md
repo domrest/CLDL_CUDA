@@ -12,7 +12,7 @@
  
  Install instructions for Windows can be found [here](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html).
  
- Install instructions for Linux can be found [here](https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html).
+ Install instructions for Linux can be found [here](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html).
 
 ## Building
 CLDL_CUDA uses cmake. Just enter the CLDL_CUDA directory from the root:
