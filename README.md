@@ -24,9 +24,9 @@ and type:
 - ``make``
 
 ## Test suite:
-A gtest test suite is included in the tests directory. The executable tests will be generated automatically when building CLDL. Run the test by doing:
-- ``cd tests``
-- ``./tests``
+A gtest test suite is included in the tests directory. The executable Google_Tests_run will be generated automatically when building CLDL_CUDA. Run the tests by doing:
+- ``cd build/gtest``
+- ``./Google_Tests_run``
 
 ## License
 
