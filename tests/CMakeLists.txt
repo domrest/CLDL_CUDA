@@ -8,6 +8,6 @@ project(CLDL LANGUAGES CUDA CXX)
 
 project(tests)
 
-add_executable(tests main.cpp)
+add_executable(tests main.cu)
 
 target_link_libraries(tests PRIVATE CLDL)

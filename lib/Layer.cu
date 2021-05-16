@@ -129,7 +129,7 @@ __host__ Layer::Layer(int _nNeurons, int _nInputs){
 
 __host__ Layer::~Layer(){
     for(int i=0;i<nNeurons;i++) {
-        delete &neurons[i];
+        neurons[i].~Neuron();
     }
     free(neurons);
     cudaFree(gpu_inputs);
@@ -187,7 +187,7 @@ __host__ void Layer::calcOutputs(){
     gpu_allocateInt(&_layerHasReported, 0);
     cudaMemcpy(_layerHasReported, &layerHasReported, sizeof(int), cudaMemcpyHostToDevice);
 
-    gpu_calcOutputs<<<nNeurons, nInputs>>>(gpu_neurons);
+    gpu_calcOutputs<<<nNeurons, 1>>>(gpu_neurons);
     cudaDeviceSynchronize();
     gpu_calcOutputsContinued<<<1,nNeurons>>>(gpu_neurons, _layerHasReported);
     cudaDeviceSynchronize();
@@ -195,12 +195,16 @@ __host__ void Layer::calcOutputs(){
     cudaMemcpy(&layerHasReported, _layerHasReported, sizeof(int), cudaMemcpyDeviceToHost);
 }
 
-__host__ double* Layer::getOutput(){
+__host__ double* Layer::getOutputs(){
     double* _outputs;
     cudaMalloc(&_outputs, sizeof(double)*getnNeurons());
     gpu_getOutputs<<<1, getnNeurons()>>>(gpu_neurons, _outputs);
     return _outputs;
 //    return (neurons[_neuronIndex]->getOutput());
+}
+
+__host__ double Layer::getOutput(int _neuronIndex) {
+    return (neurons[_neuronIndex].getOutput());
 }
 
 //*************************************************************************************
@@ -279,6 +283,7 @@ __host__ void Layer::updateWeights() {
     int blockSize = nInputs * blockYDim;        // Size of required block
     int B = std::ceil(float(nThreads)/blockSize);   // Total number of blocks required
     dim3 T = dim3(nInputs, blockYDim);          // 2D block dimensions
+
     gpu_updateWeights<<<B,T>>>(gpu_neurons, nNeurons);
     cudaDeviceSynchronize();
 }
@@ -320,3 +325,12 @@ __host__ int Layer::getnNeurons(){
     return (nNeurons);
 }
 
+__host__ void Layer::printWeights(FILE* weights) {
+    for (int i=0;i<nNeurons;i++) {
+        for (int j=0;j<nInputs;j++) {
+            fprintf(weights,"%f, ", neurons[i].getWeight(j));
+        }
+        fprintf(weights,"\n");
+    }
+    fprintf(weights,"\n");
+}

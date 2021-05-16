@@ -259,6 +259,10 @@ public:
      */
     __host__ void saveWeights();
 
+    __host__ void printInitialWeights();
+
+    __host__ void printWeights();
+
     /**
      * Snaps the final distribution of all weights in a specific layer,
      * this is overwritten every time the function is called

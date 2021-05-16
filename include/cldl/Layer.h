@@ -262,7 +262,9 @@ public:
      * @param _neuronIndex The index of the neuron
      * @return the activation of that neuron
      */
-    __host__ double* getOutput();
+    __host__ double* getOutputs();
+
+    __host__ double getOutput(int _neuronIndex);
 
     __host__ double getErrorWeightProductSum(int index);
 
@@ -312,6 +314,8 @@ public:
      * Saves the temporal weight change of all weights in all neurons into files
      */
     __host__ void saveWeights();
+
+    __host__ void printWeights(FILE*);
 
     /**
      * Snaps the final distribution of weights in a specific layer,

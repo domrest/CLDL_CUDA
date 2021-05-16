@@ -1,6 +1,8 @@
 #include "cldl/Neuron.h"
 
 #include <cuda_runtime.h>
+#include <cstdint>
+#include <iostream>
 
 
 
@@ -141,13 +143,16 @@ __host__ void Neuron::initNeuron(int _neuronIndex, int _layerIndex, weightInitMe
             gpu_setValuesInArray<<<1,getNInputs()>>>(1, weights);
             break;
         case W_RANDOM:
-            //TODO set the random
-//            weights[i] = (((double) rand() / (RAND_MAX))); //* 2) -1;
+            curandGenerator_t gen;
+            curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_DEFAULT);
+            curandSetPseudoRandomGeneratorSeed(gen, std::chrono::duration_cast<std::chrono::milliseconds>
+                    (std::chrono::system_clock::now().time_since_epoch()).count());
+
+            curandGenerateUniformDouble(gen, weights, getNInputs());
             break;
-            //cout << " Neuron: weight is: " << weights[i] << endl;
             /* rand function generates a random function between
-             * 0 and RAND_MAX, after the devision the weights are
-             * set to a value between 0 and 1 */
+             * 0 and 1, with the CUDA Random generator seed set
+             * to current time from UNIX epoch (inherently unique)*/
     }
     cudaMemcpy(initialWeights, weights, sizeof(double)*getNInputs(), cudaMemcpyDeviceToDevice);
 
@@ -640,26 +645,26 @@ __global__ void gpu_dotProduct(double* list1, double* list2, double* _value, dou
 }
 
 __device__ void device_dotProduct(double* list1, double* list2, double* _value, double* _target, int arrayLength){
-    int idx = threadIdx.x;
-    int stride = 1;
+//    int idx = threadIdx.x;
+//    int stride = 1;
 
     double target = 0.0;
-    for (int i = idx; i < arrayLength; i+=stride){
+    for (int i = 0; i < arrayLength; i+=1){
         target += list1[i]*list2[i];
     }
-
-    _value[idx] = target;
-    __syncthreads();
-
-    for (int size = stride/2; size>0; size/=2){
-        if (idx < size){
-            _value[idx] += _value[idx+size];
-        }
-        __syncthreads();
-    }
-    if (idx == 0){
-        *_target = _value[0];
-    }
+    *_target = target;
+//    _value[idx] = target;
+//    __syncthreads();
+//
+//    for (int size = stride/2; size>0; size/=2){
+//        if (idx < size){
+//            _value[idx] += _value[idx+size];
+//        }
+//        __syncthreads();
+//    }
+//    if (idx == 0){
+//        *_target = _value[0];
+//    }
 }
 
 __global__ void gpu_multiplication(double value, double* output){
