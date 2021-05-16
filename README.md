@@ -1,6 +1,6 @@
 # GPU Accelerated Closed-Loop Deep Learning
 
- This is a GPU-accelerated version of the Closed-Loop Deep Learning library.
+ This is a GPU-accelerated version of the [Closed-Loop Deep Learning](https://github.com/Sama-Darya/CLDL) library.
  
  Multithreaded processing using a CUDA-enabled GPU allows for much more complex CLDL nets.
  
