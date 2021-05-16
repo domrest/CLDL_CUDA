@@ -37,8 +37,6 @@ TEST(LayerTest, testLayerConstructor){
     ASSERT_EQ(n->getNInputs(), 10);
 }
 
-//TODO testLayerDestructor
-
 TEST(LayerTest, testLayerSetLearningRate) {
     Layer *l;
     l = new Layer(1030, 10);

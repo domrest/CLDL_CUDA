@@ -32,8 +32,6 @@ TEST(NetTest, testNetConstructor) {
     ASSERT_EQ(n->getNInputs(), 5);
 }
 
-//TODO testDestructor
-
 TEST(NetTest, testNetSetLearningRate) {
     constexpr int nLayers = 5;
     int nNeurons[nLayers] = {5,4,3,2,1};

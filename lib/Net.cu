@@ -62,6 +62,22 @@ __host__ void Net::setLearningRate(double _learningRate){
     }
 }
 
+__host__ void Net::setErrorCoeff(double _globalCoeff, double _backwardsCoeff,
+                                 double _midCoeff, double _forwardCoeff,
+                                 double _localCoeff, double  _echoCoeff) {
+    for (int i=0; i<nLayers; i++){
+        layers[i]->setErrorCoeff(_globalCoeff, _backwardsCoeff, _midCoeff,
+                                 _forwardCoeff, _localCoeff, _echoCoeff);
+    }
+}
+
+// this is only for testing
+__host__ void Net::setWeights(double* _weightsList) {
+    for (int i=0;i<nLayers;i++) {
+        layers[i]->setWeights(_weightsList);
+    }
+}
+
 //*************************************************************************************
 //forward propagation of inputs:
 //*************************************************************************************
@@ -87,10 +103,7 @@ __host__ void Net::propInputs() {
 __host__ void Net::setBackwardError(double _leadError){
     /* this is only for the final layer */
     theLeadError = _leadError;
-    //cout<< "lead Error: " << theLeadError << endl;
     layers[nLayers-1]->setBackwardError(theLeadError);
-    /* if the leadError was diff. for each output neuron
-     * then it would be implemented in a for-loop */
 }
 
 __host__ void Net::propErrorBackward() {
@@ -105,33 +118,15 @@ __host__ void Net::propErrorBackward() {
 //learning:
 //*************************************************************************************
 
-__host__ void Net::setErrorCoeff(double _globalCoeff, double _backwardsCoeff,
-                                 double _midCoeff, double _forwardCoeff,
-                                 double _localCoeff, double  _echoCoeff) {
-    for (int i=0; i<nLayers; i++){
-        layers[i]->setErrorCoeff(_globalCoeff, _backwardsCoeff, _midCoeff,
-                                 _forwardCoeff, _localCoeff, _echoCoeff);
-    }
-}
-
 __host__ void Net::updateWeights(){
     for (int i=nLayers-1; i>=0; i--){
         layers[i]->updateWeights();
     }
 }
 
-// this is only for testing
-__host__ void Net::setWeights(double* _weightsList) {
-    for (int i=0;i<nLayers;i++) {
-        layers[i]->setWeights(_weightsList);
-    }
-}
-
 //*************************************************************************************
 // getters:
 //*************************************************************************************
-
-//TODO getters
 
 __host__ int Net::getnLayers(){
     return (nLayers);
@@ -149,7 +144,7 @@ __host__ int Net::getnOutputs(){
     return (nOutputs);
 }
 
-Layer* Net::getLayer(int _layerIndex){
+__host__ Layer* Net::getLayer(int _layerIndex){
     assert(_layerIndex<nLayers);
     return (layers[_layerIndex]);
 }
@@ -175,3 +170,4 @@ __host__ void Net::printWeights() {
     }
     fclose(weights);
 }
+

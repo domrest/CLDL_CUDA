@@ -129,7 +129,6 @@ __host__ Neuron::~Neuron(){
 //initialisation:
 //*************************************************************************************
 
-//TODO test init neuron
 __host__ void Neuron::initNeuron(int _neuronIndex, int _layerIndex, weightInitMethod _wim, biasInitMethod _bim, actMethod _am){
     cudaMemcpy(myLayerIndex, &_layerIndex, sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(myNeuronIndex, &_neuronIndex, sizeof(int), cudaMemcpyHostToDevice);
@@ -196,6 +195,7 @@ __host__ double Neuron::getLearningRate() {
 //*************************************************************************************
 //forward propagation of inputs:
 //*************************************************************************************
+
 __host__ void Neuron::setInput(int _index, double _value) {
     assert((_index>=0)&&(_index<getNInputs()));
     gpu_setValueInArray<<<1,1>>>(_value, _index, inputs);
