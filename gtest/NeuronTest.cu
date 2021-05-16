@@ -288,3 +288,14 @@ TEST(NeuronTest, testNeuronInit){
     ASSERT_TRUE(n->getWeight(1)>0);
 
 }
+TEST(NeuronTest, testCalcForwardError){
+    Neuron* n = new Neuron(4);
+    Neuron* d_n;
+
+    cudaMalloc((void**) &d_n, sizeof(Neuron));
+    cudaMemcpy(d_n, n, sizeof(Neuron), cudaMemcpyHostToDevice);
+
+    n->setForwardError(2.0);
+    gpu_calcForwardError<<<1,n->getNInputs()>>>(d_n);
+    ASSERT_EQ(n->getForwardError(), 0);
+}
